@@ -47,6 +47,7 @@
 	# Let p be the player, and any values 
 	# Let $s0 = p.x, $s1 = p.y, $s2 = p.dx, $s3 = p.dy
 	# These values are stored in registers because they are accessed frequently 
+	# Let $t8 hold the last button pressed
 	
 game_start:
 	# INITIALIZING PLAYER VALUES
@@ -565,6 +566,213 @@ background_details:
 	addi $t1, $t1, 256		# 43th LAYER of screen
 	sw $t2, 136($t1)
 	
+### DRAWING PLATFORMS
+	# Let $t1 store the address of where the player character should be printed
+	# Let $t2 store colours that will be printed
+	# Let $t3, $t4, $t5, $t6, $t7 be a TEMPORARY register for calculations in this label
+	# where $t3, y coordinate for the platform
+	
+	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
+	li $t2, 0x00d2e2e4		# 2nd LAYER of screen
+					
+	addi $t1, $t1, 2816		
+	li $t3, 1024			# $t3 = 256 * 4, since each platform will be 4 units wide
+	li $t4, 0
+	
+	# First platform - Topmost starting on 12th layer
+first_platform:
+	beq $t3, $t4, second_platform_prelude
+	addi $t1, $t1, 256
+	
+	sw $t2, 60($t1)
+	sw $t2, 64($t1)
+	sw $t2, 68($t1)
+	sw $t2, 72($t1)
+	sw $t2, 76($t1)
+	sw $t2, 80($t1)
+	sw $t2, 84($t1)
+	sw $t2, 88($t1)
+	sw $t2, 92($t1)
+	sw $t2, 96($t1)
+	sw $t2, 100($t1)
+	sw $t2, 104($t1)
+	sw $t2, 108($t1)
+	sw $t2, 112($t1)
+	sw $t2, 116($t1)
+	sw $t2, 120($t1)
+	sw $t2, 124($t1)
+	sw $t2, 128($t1)
+	sw $t2, 132($t1)
+	sw $t2, 136($t1)
+	sw $t2, 140($t1)
+	sw $t2, 144($t1)
+	sw $t2, 148($t1)
+	sw $t2, 152($t1)
+	sw $t2, 156($t1)
+	sw $t2, 160($t1)
+	sw $t2, 164($t1)
+	sw $t2, 168($t1)
+	sw $t2, 172($t1)
+	sw $t2, 176($t1)
+	sw $t2, 180($t1)
+	sw $t2, 184($t1)
+	sw $t2, 188($t1)
+	
+	addi $t4, $t4, 256
+	
+	j first_platform
+	
+second_platform_prelude:
+	addi $t1, $t1, 2816	# Second platform - Topmost starting on 22th layer
+	li $t4, 0
+
+second_platform:	
+	beq $t3, $t4, third_platform_prelude
+	addi $t1, $t1, 256
+	
+	sw $t2, 144($t1)
+	sw $t2, 148($t1)
+	sw $t2, 152($t1)
+	sw $t2, 156($t1)
+	sw $t2, 160($t1)
+	sw $t2, 164($t1)
+	sw $t2, 168($t1)
+	sw $t2, 172($t1)
+	sw $t2, 176($t1)
+	sw $t2, 180($t1)
+	sw $t2, 184($t1)
+	sw $t2, 188($t1)
+	sw $t2, 192($t1)
+	sw $t2, 196($t1)
+	sw $t2, 200($t1)
+	sw $t2, 204($t1)
+	sw $t2, 208($t1)
+	sw $t2, 212($t1)
+	sw $t2, 216($t1)
+	sw $t2, 220($t1)
+	sw $t2, 224($t1)
+	sw $t2, 228($t1)
+	sw $t2, 232($t1)
+	sw $t2, 236($t1)
+	sw $t2, 240($t1)
+	sw $t2, 244($t1)
+	sw $t2, 248($t1)
+	sw $t2, 252($t1)
+	
+	addi $t4, $t4, 256
+	
+	j second_platform
+	
+third_platform_prelude:
+	addi $t1, $t1, 2816
+	li $t4, 0
+
+third_platform:
+	beq $t3, $t4, floor_prelude
+	addi $t1, $t1, 256
+	
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	sw $t2, 24($t1)
+	sw $t2, 28($t1)
+	sw $t2, 32($t1)
+	sw $t2, 36($t1)
+	sw $t2, 40($t1)
+	sw $t2, 44($t1)
+	sw $t2, 48($t1)
+	sw $t2, 52($t1)
+	sw $t2, 56($t1)
+	sw $t2, 60($t1)
+	sw $t2, 64($t1)
+	sw $t2, 68($t1)
+	sw $t2, 72($t1)
+	sw $t2, 76($t1)
+	sw $t2, 80($t1)
+	
+	addi $t4, $t4, 256
+	
+	j third_platform
+
+floor_prelude:
+	addi $t1, $t1, 3584
+	li $t4, 0
+	
+floor:
+	beq $t3, $t4, print_player
+	addi $t1, $t1, 256
+	
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	sw $t2, 24($t1)
+	sw $t2, 28($t1)
+	sw $t2, 32($t1)
+	sw $t2, 36($t1)
+	sw $t2, 40($t1)
+	sw $t2, 44($t1)
+	sw $t2, 48($t1)
+	sw $t2, 52($t1)
+	sw $t2, 56($t1)
+	sw $t2, 60($t1)
+	sw $t2, 64($t1)
+	sw $t2, 68($t1)
+	sw $t2, 72($t1)
+	sw $t2, 76($t1)
+	sw $t2, 80($t1)
+	sw $t2, 84($t1)
+	sw $t2, 88($t1)
+	sw $t2, 92($t1)
+	sw $t2, 96($t1)
+	sw $t2, 100($t1)
+	sw $t2, 104($t1)
+	sw $t2, 108($t1)
+	sw $t2, 112($t1)
+	sw $t2, 116($t1)
+	sw $t2, 120($t1)
+	sw $t2, 124($t1)
+	sw $t2, 128($t1)
+	sw $t2, 132($t1)
+	sw $t2, 136($t1)
+	sw $t2, 140($t1)
+	sw $t2, 144($t1)
+	sw $t2, 148($t1)
+	sw $t2, 152($t1)
+	sw $t2, 156($t1)
+	sw $t2, 160($t1)
+	sw $t2, 164($t1)
+	sw $t2, 168($t1)
+	sw $t2, 172($t1)
+	sw $t2, 176($t1)
+	sw $t2, 180($t1)
+	sw $t2, 184($t1)
+	sw $t2, 188($t1)
+	sw $t2, 192($t1)
+	sw $t2, 196($t1)
+	sw $t2, 200($t1)
+	sw $t2, 204($t1)
+	sw $t2, 208($t1)
+	sw $t2, 212($t1)
+	sw $t2, 216($t1)
+	sw $t2, 220($t1)
+	sw $t2, 224($t1)
+	sw $t2, 228($t1)
+	sw $t2, 232($t1)
+	sw $t2, 236($t1)
+	sw $t2, 240($t1)
+	sw $t2, 244($t1)
+	sw $t2, 248($t1)
+	sw $t2, 252($t1)
+	
+	addi $t4, $t4, 256
+	j floor
+
 ### DRAWING PLAYER
 
 	# Let $t1 store the address of where the player character should be printed
@@ -639,6 +847,7 @@ print_player:
 	li $t3, 0xffff0000	# Checking if a key was pressed
 	lw $t4, 0($t3)
 	beq $t4, 1, control
+	beq $t8, 0x77, gravity
 	bltz $s2, friction_slow_a
 	j friction_slow_d	# If no buttons were pressed, then we reduce velocity (slow the player down)
 	
@@ -669,7 +878,7 @@ d_pressed:
 
 w_pressed:	
 	bnez $s3, gravity	# Cannot jump again until reaches the ground
-	addi $s3, $s3, -9	# Changing y velocity "Jumping"
+	addi $s3, $s3, -11	# Changing y velocity "Jumping"
 	j gravity
 	
 friction_slow_a:
@@ -711,9 +920,45 @@ side_collide_2:
 	mult $s2, $t5	# Bounce off edge
 	mflo $s2
 
+	# Let $t3, $t4, $t5, $t6 be a TEMPORARY register for calculations in this label
+	# We want to check (p.x, p.y + 8) and (p.x + 6, p.y + 8) and see if either are white
 floor_collide:
-	# TO-DO: Check if the floor is white
-	blt $s1, 50, move_player
+	# Checking (p.x, p.y + 8)
+	sll $t3, $s0, 2 	# $t3 = p.x * 4 = p.x * pixel size
+	addi $t1, $t3, 0	# $t1 = p.x * 4
+	
+	li $t4, 256		# $t4 = 256 = screen width
+	addi $t3, $s1, 0	# $t3 = p.y
+	addi $t3, $s1, 6	# $t3 = p.y + 6
+	mult $t3, $t4		# $t3 = (p.y + 6) * 256
+	mflo $t3
+	
+	add $t1, $t3, $t1	# $t1 = p.x * 4 + (p.y + 6) * 256
+	add $t1, $t0, $t1	# $t1 = base address + (p.x * 4 + (p.y + 6) * 256)
+	
+	lw $t4, 0($t1)		# Loading the colour to $t4
+	beq $t4, 0x00d2e2e4, floor_collided
+	
+	# Checking (p.x + 7, p.y + 8)
+	addi $t3, $s0, 6	# $t3 = p.x + 6
+	sll $t3, $t3, 2 	# $t3 = (p.x + 6) * 4 = p.x * pixel size
+	addi $t1, $t3, 0	# $t1 = (p.x + 6) * 4
+	
+	li $t4, 256		# $t4 = 256 = screen width
+	addi $t3, $s1, 0	# $t3 = p.y
+	addi $t3, $s1, 6	# $t3 = p.y + 6
+	mult $t3, $t4		# $t3 = (p.y + 6) * 256
+	mflo $t3
+	
+	add $t1, $t3, $t1	# $t1 = (p.x + 6) * 4 + (p.y + 6) * 256
+	add $t1, $t0, $t1	# $t1 = base address + ((p.x + 6)  * 4 + (p.y + 6) * 256)
+	
+	lw $t4, 0($t1)		# Loading the colour to $t4
+	beq $t4, 0x00d2e2e4, floor_collided
+	
+	j move_player
+	
+floor_collided:
 	bltz $s3, move_player
 	li $s3, 0			# Changing velocity to 0 if it is at the bottom
 
@@ -723,7 +968,7 @@ move_player:
 	add $s0, $s2, $s0	# Moving player based on velocity
 	add $s1, $s3, $s1
 	
-	addi $t5, $t4, 0	# Keeping track
+	addi $t8, $t4, 0	# Keeping track
 	
 	
 	j loop
