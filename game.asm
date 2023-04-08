@@ -38,8 +38,8 @@
 .data
 # Let enemy data be read like player data: e.x, e.y, e.dx, e.dy
 enemy_1_data:	.word 30, 54, 1, 0
-enemy_2_data:	.word 50, 21, 1, 0
-enemy_3_data:	.word 30, 54, 1, 0
+enemy_2_data:	.word 50, 21, 0, 0
+enemy_3_data:	.word 4, 36, 0, 0
 
 .eqv BASE_ADDRESS 0x10008000
 
@@ -54,12 +54,35 @@ enemy_3_data:	.word 30, 54, 1, 0
 	# Let $t9 hold the last button pressed
 	# Let $t7, $t8 hold enemy data
 	
+	# Let $t3, $t4 be temporary variables
 game_start:
-	# INITIALIZING PLAYER VALUES
-	li $s0, 10
+	li $s0, 10	# Initializing player values
 	li $s1, 10
 	li $s2, 0
 	li $s3, 0
+	
+	# Initializing enemy 1 data
+	la $t7, enemy_1_data
+	li $t3, 30
+	sw $t3, 0($t7)		
+	li $t3, 54
+	sw $t3, 4($t7)
+	li $t3, 1
+	sw $t3, 8($t7)
+	
+	# Initializing enemy 2 data
+	la $t7, enemy_2_data
+	li $t3, 50
+	sw $t3, 0($t7)		
+	li $t3, 21
+	sw $t3, 4($t7)
+	
+	# Initializing enemy 3 data
+	la $t7, enemy_3_data
+	li $t3, 4
+	sw $t3, 0($t7)		
+	li $t3, 36
+	sw $t3, 4($t7)
 	
 loop:
 	li $v0, 32
@@ -856,6 +879,8 @@ print_player:
 	jal print_enemy
 	la $t7, enemy_2_data
 	jal print_enemy
+	la $t7, enemy_3_data
+	jal print_enemy
 	
 	j control_prelude
 	
@@ -949,6 +974,7 @@ control:
 	beq $t4, 0x77, w_pressed
 	beq $t4, 0x64, d_pressed
 	beq $t4, 0x61, a_pressed
+	beq $t4, 0x70, p_pressed
 	
 a_pressed:
 	beq $s2, -6, side_collide	# Checking if max velocity
@@ -970,6 +996,9 @@ w_pressed:
 	bnez $s3, gravity	# Cannot jump again until reaches the ground
 	addi $s3, $s3, -11	# Changing y velocity "Jumping"
 	j gravity
+	
+p_pressed:
+	j game_start
 	
 friction_slow_a:
 	beqz $s2, gravity		# Checking if velocity is already 0
@@ -1062,44 +1091,55 @@ move_player:
 
 ### MOVING ENEMIES
 
+	la $t7, enemy_1_data
+	jal move_enemy_prelude
+	la $t7, enemy_2_data
+	jal move_enemy_prelude
+	la $t7, enemy_3_data
+	jal move_enemy_prelude
+	
+	j enemy_collide_prelude
+
 	# Let $t7, and $t8 hold enemy data
 	# Let $t5, $t6 be a TEMPORARY VARIABLES for calculations
-move_enemy_1_prelude:	
-	la $t7, enemy_1_data
+move_enemy_prelude:	
 	lw $t8, 0($t7)		# $t8 = e1.x
 	lw $t5, 8($t7)		# $t5 = e1.dx	
 
-	bge $t8, 56, flip_enemy_1
-	ble $t8, 4, flip_enemy_1
+	bge $t8, 56, flip_enemy
+	ble $t8, 4, flip_enemy
 	
-	j move_enemy_1
+	j move_enemy
 	
-flip_enemy_1:
+flip_enemy:
 	li $t6, -1
 	mult $t5, $t6
 	mflo $t5		# t5 = -e1.dx
 	
 	sw $t5, 8($t7)		# Saving new e1.dx in memory
 
-move_enemy_1:
+move_enemy:
 	add $t8, $t8, $t5	# $t8 = e1.x + e1.dx
 	
 	sw $t8, 0($t7)		# Saving new e1.x in memory
+	jr $ra
 
 ### ENEMY COLISSIONS
 
 	# Let $t7, and $t8 hold enemy data
 	# Let $t3, $t4, $t5, $t6 be a TEMPORARY VARIABLES for calculations
 
-	
+enemy_collide_prelude:
 	la $t7, enemy_1_data
-	jal enemy_collide_prelude
+	jal check_x
 	la $t7, enemy_2_data
-	jal enemy_collide_prelude
+	jal check_x
+	la $t7, enemy_3_data
+	jal check_x
 	
 	j go_back
 
-enemy_collide_prelude:
+check_x:
 	lw $t3,0($t7)		# Let $t3 = e.x
 	lw $t4,4($t7)		# Let $t4 = e.y
 	addi $t5, $s0, 6	# Let $t5 = p.x + 6
