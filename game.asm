@@ -36,10 +36,14 @@
 #####################################################################
 
 .data
-# Let enemy data be read like player data: e.x, e.y, e.dx, e.dy
-enemy_1_data:	.word 30, 54, 1, 0
-enemy_2_data:	.word 50, 21, 0, 0
-enemy_3_data:	.word 4, 36, 0, 0
+# Let enemy data be read like player data: e.x, e.y, e.dx, e.dy, e.alive, e.timer
+enemy_1_data:	.word 30, 54, 1, 0, 1, 5000
+enemy_2_data:	.word 50, 21, 0, 0, 1, 5000
+enemy_3_data:	.word 4, 36, 0, 0, 1, 5000
+
+kirby_full:	.word 0
+kirby_health:	.word 5
+
 
 .eqv BASE_ADDRESS 0x10008000
 
@@ -56,8 +60,8 @@ enemy_3_data:	.word 4, 36, 0, 0
 	
 	# Let $t3, $t4 be temporary variables
 game_start:
-	li $s0, 10	# Initializing player values
-	li $s1, 10
+	li $s0, 30	# Initializing player values
+	li $s1, 21
 	li $s2, 0
 	li $s3, 0
 	
@@ -67,7 +71,7 @@ game_start:
 	sw $t3, 0($t7)		
 	li $t3, 54
 	sw $t3, 4($t7)
-	li $t3, 1
+	li $t3, 0
 	sw $t3, 8($t7)
 	
 	# Initializing enemy 2 data
@@ -963,8 +967,8 @@ control_prelude:
 	lw $t4, 0($t3)
 	beq $t4, 1, control
 	beq $t9, 0x77, gravity
-	bltz $s2, friction_slow_a
-	j friction_slow_d	# If no buttons were pressed, then we reduce velocity (slow the player down)
+	bltz $s2, friction_slow_a_prelude
+	j friction_slow_d_prelude	# If no buttons were pressed, then we reduce velocity (slow the player down)
 	
 ### CONTROLS (VELOCITY)
 	# Let $t3, $t4, $t5, $t6 be a TEMPORARY register for calculations in this label
@@ -1000,11 +1004,19 @@ w_pressed:
 p_pressed:
 	j game_start
 	
+friction_slow_a_prelude:
+	blez $s3, friction_slow_a
+	j gravity 
+
 friction_slow_a:
 	beqz $s2, gravity		# Checking if velocity is already 0
 	addi $s2, $s2, 1
 	j gravity
 	
+friction_slow_d_prelude:
+	blez $s3, friction_slow_d
+	j gravity 	
+
 friction_slow_d:
 	beqz $s2, gravity		# Checking if velocity is already 0
 	addi $s2, $s2, -1
@@ -1075,21 +1087,14 @@ floor_collide:
 	lw $t4, 0($t1)		# Loading the colour to $t4
 	beq $t4, 0x00d2e2e4, floor_collided
 	
-	j move_player
+	j enemy_move_prelude_pre
 	
 floor_collided:
-	bltz $s3, move_player
+	bltz $s3, enemy_move_prelude_pre
 	li $s3, 0			# Changing velocity to 0 if it is at the bottom
 
-### MOVING PLAYER
-
-move_player:
-	add $s0, $s2, $s0	# Moving player based on velocity
-	add $s1, $s3, $s1
-	
-	addi $t9, $t4, 0	# Keeping track
-
 ### MOVING ENEMIES
+enemy_move_prelude_pre:
 
 	la $t7, enemy_1_data
 	jal move_enemy_prelude
@@ -1137,7 +1142,7 @@ enemy_collide_prelude:
 	la $t7, enemy_3_data
 	jal check_x
 	
-	j go_back
+	j move_player	# TO-DO: Delete later
 
 check_x:
 	lw $t3,0($t7)		# Let $t3 = e.x
@@ -1145,16 +1150,26 @@ check_x:
 	addi $t5, $s0, 6	# Let $t5 = p.x + 6
 	addi $t6, $t3, 6	# Let $t6 = e.x + 6	
 	
-	ble $s0, $t6, p_before_e	# If p.x < e.x + 6
-	ble $t3, $t5, e_before_p	# If e.x < p.x + 6
+	ble $s0, $t6, e_before_p	# If p.x < e.x + 6
 	jr $ra			
 	
+e_before_p:	
+	ble $t3, $s0, check_velocity_left		# If e.x < p.x 
+	
+p_before_e_prelude:
+	ble $t3, $t5, p_before_e	# If e.x < p.x + 6
+	jr $ra
+
 p_before_e:
-	bge $t5, $t3, y_check		# If e.x < p.x + 6
+	ble $s0, $t3, check_velocity_right		# If p.x < e.x
 	jr $ra
 	
-e_before_p:	
-	bge $t6, $s0, y_check		# If p.x < e.x + 6
+check_velocity_left:
+	bltz $s2, y_check
+	jr $ra
+	
+check_velocity_right:
+	bgtz $s2, y_check
 	jr $ra
 
 y_check:
@@ -1183,7 +1198,87 @@ enemy_collide:
 	sw $t2, 12($t1)
 	sw $t2, 16($t1)
 	
+	li $s2, 0
+	
 	jr $ra
+
+	# Let $t7, and $t8 hold enemy data
+	# Let $t3, $t4, $t5, $t6, $s6, $s7 be a TEMPORARY VARIABLES for calculations
+object_collide_prelude:
+
+	la $t7, enemy_1_data	
+	addi $s6, $s0, 4	# Let $s6 = p.x + 6
+	jal check_x_object
+	addi $s6, $s0, -4	# Let $s6 = p.x - 4
+	jal check_x_object
+	
+	la $t7, enemy_2_data	
+	addi $s6, $s0, 4	# Let $s6 = p.x + 6
+	jal check_x_object
+	addi $s6, $s0, -4	# Let $s6 = p.x - 4
+	jal check_x_object
+	
+	la $t7, enemy_3_data
+	addi $s6, $s0, 4	# Let $s6 = p.x + 12
+	jal check_x_object
+	addi $s6, $s0, -4	# Let $s6 = p.x - 4
+	jal check_x_object
+	
+	j move_player
+
+check_x_object:
+	lw $t3,0($t7)		# Let $t3 = e.x
+	lw $t4,4($t7)		# Let $t4 = e.y
+	addi $t5, $s6, 6	# Let $t5 = p.x + 6
+	addi $t6, $t3, 6	# Let $t6 = e.x + 6	
+	
+	ble $s6, $t6, p_before_o	# If p.x < e.x + 6
+	ble $t3, $t5, o_before_p	# If e.x < p.x + 6
+	jr $ra			
+	
+p_before_o:
+	bge $t5, $t3, y_check_object		# If e.x < p.x + 6
+	jr $ra
+	
+o_before_p:	
+	bge $t6, $s6, y_check_object		# If p.x < e.x + 6
+	jr $ra
+
+y_check_object:
+	addi $t5, $s1, 6	# Let $t5 = p.y + 6
+	addi $t6, $t4, 6	# Let $t6 = e.y + 6
+
+	ble $s1, $t6, o_above_p	# If p.y < e.y + 6
+	ble $t4, $t5, p_above_o	# If e.y < p.y + 6
+	jr $ra
+	
+p_above_o:
+	bge $t4, $s1, object_collide	# If e.y < p.y
+	jr $ra
+
+o_above_p:
+	bge $s1, $t4, object_collide	# If p.y < e.y
+	jr $ra
+
+object_collide:
+	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
+	li $t2, 0x00e23131		# 2nd LAYER of screen
+	
+	sw $t2, 24($t1)
+	sw $t2, 28($t1)
+	sw $t2, 32($t1)
+	sw $t2, 36($t1)
+	sw $t2, 40($t1)
+	
+	j move_player
+
+### MOVING PLAYER
+
+move_player:
+	add $s0, $s2, $s0	# Moving player based on velocity
+	add $s1, $s3, $s1
+	
+	addi $t9, $t4, 0	# Keeping track
 
 go_back:
 	j loop
