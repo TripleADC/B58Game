@@ -1088,7 +1088,62 @@ move_enemy_1:
 
 ### ENEMY COLISSIONS
 
+	# Let $t7, and $t8 hold enemy data
+	# Let $t3, $t4, $t5, $t6 be a TEMPORARY VARIABLES for calculations
 
+	
+	la $t7, enemy_1_data
+	jal enemy_collide_prelude
+	la $t7, enemy_2_data
+	jal enemy_collide_prelude
+	
+	j go_back
+
+enemy_collide_prelude:
+	lw $t3,0($t7)		# Let $t3 = e.x
+	lw $t4,4($t7)		# Let $t4 = e.y
+	addi $t5, $s0, 6	# Let $t5 = p.x + 6
+	addi $t6, $t3, 6	# Let $t6 = e.x + 6	
+	
+	ble $s0, $t6, p_before_e	# If p.x < e.x + 6
+	ble $t3, $t5, e_before_p	# If e.x < p.x + 6
+	jr $ra			
+	
+p_before_e:
+	bge $t5, $t3, y_check		# If e.x < p.x + 6
+	jr $ra
+	
+e_before_p:	
+	bge $t6, $s0, y_check		# If p.x < e.x + 6
+	jr $ra
+
+y_check:
+	addi $t5, $s1, 6	# Let $t5 = p.y + 6
+	addi $t6, $t4, 6	# Let $t6 = e.y + 6
+
+	ble $s1, $t6, e_above_p	# If p.y < e.y + 6
+	ble $t4, $t5, p_above_e	# If e.y < p.y + 6
+	jr $ra
+	
+p_above_e:
+	bge $t4, $s1, enemy_collide	# If e.y < p.y
+	jr $ra
+
+e_above_p:
+	bge $s1, $t4, enemy_collide	# If p.y < e.y
+	jr $ra
+
+enemy_collide:
+	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
+	li $t2, 0x00e23131		# 2nd LAYER of screen
+	
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	
+	jr $ra
 
 go_back:
 	j loop
