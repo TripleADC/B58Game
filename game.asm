@@ -71,7 +71,7 @@ game_start:
 	sw $t3, 0($t7)		
 	li $t3, 54
 	sw $t3, 4($t7)
-	li $t3, 0
+	li $t3, 1
 	sw $t3, 8($t7)
 	
 	# Initializing enemy 2 data
@@ -1135,7 +1135,8 @@ move_enemy:
 	# Let $t3, $t4, $t5, $t6 be a TEMPORARY VARIABLES for calculations
 
 enemy_collide_prelude:
-	la $t7, enemy_1_data
+	la $t7, enemy_1_data 	
+	la $t8, enemy_1_data
 	jal check_x
 	la $t7, enemy_2_data
 	jal check_x
@@ -1199,6 +1200,16 @@ enemy_collide:
 	sw $t2, 16($t1)
 	
 	li $s2, 0
+	
+	beq $t7, $t8, enemy_stop
+	jr $ra
+
+enemy_stop:
+	li $t4, -1
+	lw $t5, 8($t7)
+	mult $t5, $t4
+	mflo $t5	
+	sw $t5, 8($t7)
 	
 	jr $ra
 
