@@ -35,7 +35,11 @@
 #
 #####################################################################
 
-
+.data
+# Let enemy data be read like player data: e.x, e.y, e.dx, e.dy
+enemy_1_data:	.word 30, 54, 1, 0
+enemy_2_data:	.word 50, 21, 1, 0
+enemy_3_data:	.word 30, 54, 1, 0
 
 .eqv BASE_ADDRESS 0x10008000
 
@@ -47,7 +51,8 @@
 	# Let p be the player, and any values 
 	# Let $s0 = p.x, $s1 = p.y, $s2 = p.dx, $s3 = p.dy
 	# These values are stored in registers because they are accessed frequently 
-	# Let $t8 hold the last button pressed
+	# Let $t9 hold the last button pressed
+	# Let $t7, $t8 hold enemy data
 	
 game_start:
 	# INITIALIZING PLAYER VALUES
@@ -844,10 +849,95 @@ print_player:
 	sw $t2, 16($t1)
 	sw $t2, 20($t1)
 	
+### DRAWING ENEMIES
+	
+	# Let $t7, and $t8 hold enemy data
+	la $t7, enemy_1_data
+	jal print_enemy
+	la $t7, enemy_2_data
+	jal print_enemy
+	
+	j control_prelude
+	
+print_enemy:
+	lw $t8, 0($t7)		# $t8 = e1.x
+	
+	sll $t3, $t8, 2 	# $t3 = e1.x * 4 = e1.x * pixel size
+	addi $t1, $t3, 0	# $t1 = e1.x * 4
+	
+	li $t4, 256		# $t4 = 256 = screen width
+	lw $t8, 4($t7)		# $t8 = e1.y
+	
+	addi $t3, $t8, 0	# $t3 = e1.y
+	mult $t3, $t4		# $t3 = e1.y * 256
+	mflo $t3
+	
+	add $t1, $t3, $t1	# $t1 = e1.x * 4 + e1.y * 256
+	add $t1, $t0, $t1	# $t1 = base address + (e1.x * 4 + e1.y * 256)
+	
+	li $t2, 0x00ca6037	# FIRST LAYER of character
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	
+	addi $t1, $t1, 256	# SECOND LAYER of character
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	li $t2, 0x00000000
+	sw $t2, 8($t1)
+	li $t2, 0x00f1ad5c
+	sw $t2, 12($t1)
+	li $t2, 0x00000000
+	sw $t2, 16($t1)
+	li $t2, 0x00ca6037
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# THIRD LAYER of character
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	li $t2, 0x00000000
+	sw $t2, 8($t1)
+	li $t2, 0x00f1ad5c
+	sw $t2, 12($t1)
+	li $t2, 0x00000000
+	sw $t2, 16($t1)
+	li $t2, 0x00ca6037
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# FOURTH LAYER of character
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	li $t2, 0x00f1ad5c
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# FIFTH LAYER of character
+	li $t2, 0x00f1ad5c
+	sw $t2, 4($t1)
+	li $t2, 0x00ca6037
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+
+	addi $t1, $t1, 256	# SIXTH LAYER of character
+	li $t2, 0x00f1ad5c
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	
+	jr $ra
+	
+control_prelude:
+	
 	li $t3, 0xffff0000	# Checking if a key was pressed
 	lw $t4, 0($t3)
 	beq $t4, 1, control
-	beq $t8, 0x77, gravity
+	beq $t9, 0x77, gravity
 	bltz $s2, friction_slow_a
 	j friction_slow_d	# If no buttons were pressed, then we reduce velocity (slow the player down)
 	
@@ -968,9 +1058,39 @@ move_player:
 	add $s0, $s2, $s0	# Moving player based on velocity
 	add $s1, $s3, $s1
 	
-	addi $t8, $t4, 0	# Keeping track
+	addi $t9, $t4, 0	# Keeping track
+
+### MOVING ENEMIES
+
+	# Let $t7, and $t8 hold enemy data
+	# Let $t5, $t6 be a TEMPORARY VARIABLES for calculations
+move_enemy_1_prelude:	
+	la $t7, enemy_1_data
+	lw $t8, 0($t7)		# $t8 = e1.x
+	lw $t5, 8($t7)		# $t5 = e1.dx	
+
+	bge $t8, 56, flip_enemy_1
+	ble $t8, 4, flip_enemy_1
 	
+	j move_enemy_1
 	
+flip_enemy_1:
+	li $t6, -1
+	mult $t5, $t6
+	mflo $t5		# t5 = -e1.dx
+	
+	sw $t5, 8($t7)		# Saving new e1.dx in memory
+
+move_enemy_1:
+	add $t8, $t8, $t5	# $t8 = e1.x + e1.dx
+	
+	sw $t8, 0($t7)		# Saving new e1.x in memory
+
+### ENEMY COLISSIONS
+
+
+
+go_back:
 	j loop
 exit: 
 	li $v0, 10 # terminate the program gracefully
