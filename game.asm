@@ -37,9 +37,9 @@
 
 .data
 # Let enemy data be read like player data: e.x, e.y, e.dx, e.dy, e.facing, e.alive, e.timer
-enemy_1_data:	.word 30, 54, 1, 0, 1, 1, 5000
-enemy_2_data:	.word 54, 21, 0, 0, 0, 1, 5000
-enemy_3_data:	.word 4, 36, 0, 0, 1, 1, 5000
+enemy_1_data:	.word 30, 54, 1, 0, 1, 1, 15000
+enemy_2_data:	.word 54, 21, 0, 0, 0, 1, 15000
+enemy_3_data:	.word 4, 36, 0, 0, 1, 1, 15000
 
 kirby_full:	.word 0
 kirby_facing:	.word 1		# 1 for right, 0 for left
@@ -129,18 +129,99 @@ attackframe_check:
 	la $t1, kirby_attack_frames
 	lw $t2, 0($t1)
 	blt $t2, 1500, attackframe_decrement
-	j background_draw_prelude
+	j enemy_1_respawn_check
 	
 attackframe_decrement:
 	addi $t2, $t2, -100
 	sw $t2, 0($t1)
 	
 	blez $t2, attackframe_update
-	j background_draw_prelude
+	j enemy_1_respawn_check
 	
 attackframe_update:
 	li $t2, 1500
 	sw $t2, 0($t1)
+	
+enemy_1_respawn_check:
+	la $t1, enemy_1_data
+	lw $t2, 24($t1)
+	blt $t2, 15000, enemy_1_decrement
+	j enemy_2_respawn_check
+	
+enemy_1_decrement:
+	addi $t2, $t2, -100
+	sw $t2, 24($t1)
+	
+	blez $t2, enemy_1_respawn
+	j enemy_2_respawn_check
+	
+enemy_1_respawn:
+	li $t2, 30		# Resetting positions
+	sw $t2, 0($t1)
+	li $t2, 54
+	sw $t2, 4($t1)
+	li $t2, 1		# Resetting speeds and facing
+	sw $t2, 8($t1)	
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	li $t2, 0
+	sw $t2, 12($t1)
+	li $t2, 15000		# Resetting timer
+	sw $t2, 24($t1)
+	
+enemy_2_respawn_check:
+	la $t1, enemy_2_data
+	lw $t2, 24($t1)
+	blt $t2, 15000, enemy_2_decrement
+	j enemy_3_respawn_check
+	
+enemy_2_decrement:
+	addi $t2, $t2, -100
+	sw $t2, 24($t1)
+	
+	blez $t2, enemy_2_respawn
+	j enemy_3_respawn_check
+	
+enemy_2_respawn:
+	li $t2, 54		# Resetting positions
+	sw $t2, 0($t1)
+	li $t2, 21
+	sw $t2, 4($t1)
+	li $t2, 1		# Resetting speeds and facing
+	sw $t2, 20($t1)
+	li $t2, 0
+	sw $t2, 8($t1)	
+	sw $t2, 12($t1)	
+	sw $t2, 16($t1)
+	li $t2, 15000		# Resetting timer
+	sw $t2, 24($t1)
+	
+enemy_3_respawn_check:
+	la $t1, enemy_3_data
+	lw $t2, 24($t1)
+	blt $t2, 15000, enemy_3_decrement
+	j background_draw_prelude
+	
+enemy_3_decrement:
+	addi $t2, $t2, -100
+	sw $t2, 24($t1)
+	
+	blez $t2, enemy_3_respawn
+	j background_draw_prelude
+	
+enemy_3_respawn:
+	li $t2, 4		# Resetting positions
+	sw $t2, 0($t1)
+	li $t2, 36
+	sw $t2, 4($t1)
+	li $t2, 1		# Resetting speeds and facing
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	li $t2, 0
+	sw $t2, 8($t1)	
+	sw $t2, 12($t1)
+	li $t2, 15000		# Resetting timer
+	sw $t2, 24($t1)
 
 ### DRAWING BACKGROUND
 background_draw_prelude:
@@ -2105,6 +2186,19 @@ object_collide:
 	sw $t2, 32($t1)
 	sw $t2, 36($t1)
 	sw $t2, 40($t1)
+	
+	li $t2, 1000			# Setting enemy out of bounds
+	sw $t2, 0($t7)
+	sw $t2, 4($t7)
+	li $t2, 0
+	sw $t2, 8($t7)			# Stopping any enemies
+	sw $t2, 12($t7)
+	sw $t2, 20($t7)			# Branding enemy as dead
+	
+					# Starting cooldown until enemy respawns
+	lw $t2, 24($t7)
+	addi $t2, $t2, -100
+	sw $t2, 24($t7)
 	
 	j gravity
 
