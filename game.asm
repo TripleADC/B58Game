@@ -36,12 +36,13 @@
 #####################################################################
 
 .data
-# Let enemy data be read like player data: e.x, e.y, e.dx, e.dy, e.alive, e.timer
-enemy_1_data:	.word 30, 54, 1, 0, 1, 5000
-enemy_2_data:	.word 54, 21, 0, 0, 1, 5000
-enemy_3_data:	.word 4, 36, 0, 0, 1, 5000
+# Let enemy data be read like player data: e.x, e.y, e.dx, e.dy, e.facing, e.alive, e.timer
+enemy_1_data:	.word 30, 54, 1, 0, 1, 1, 5000
+enemy_2_data:	.word 54, 21, 0, 0, 0, 1, 5000
+enemy_3_data:	.word 4, 36, 0, 0, 1, 1, 5000
 
 kirby_full:	.word 0
+kirby_facing:	.word 1		# 1 for right, 0 for left
 kirby_health:	.word 5
 kirby_invincible_frames:	.word 2000
 
@@ -844,6 +845,9 @@ print_player_prelude:
 	la $t3, kirby_invincible_frames	# Checking if kirby is invincible
 	lw $t4, 0($t3)
 	blt $t4, 2000, print_player_invincible
+	la $t3, kirby_facing
+	lw $t4, 0($t3)				# Checking if kirby is facing left
+	beq $t4, 0, print_player_left
 	j print_player
 	
 print_player_invincible:
@@ -901,6 +905,74 @@ print_player_invincible:
 	sw $t2, 16($t1)
 	sw $t2, 20($t1)
 
+	j print_enemy_prelude
+
+print_player_left:
+	sll $t3, $s0, 2 	# $t3 = p.x * 4 = p.x * pixel size
+	addi $t1, $t3, 0	# $t1 = p.x * 4
+	
+	li $t4, 256		# $t4 = 256 = screen width
+	addi $t3, $s1, 0	# $t3 = p.y
+	mult $t3, $t4		# $t3 = p.y * 256
+	mflo $t3
+	
+	add $t1, $t3, $t1	# $t1 = p.x * 4 + p.y * 256
+	add $t1, $t0, $t1	# $t1 = base address + (p.x * 4 + p.y * 256)
+	
+	li $t2, 0x00a775b0	# FIRST LAYER of character
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	
+	addi $t1, $t1, 256	# SECOND LAYER of character
+	sw $t2, 0($t1)
+	li $t2, 0x00000000
+	sw $t2, 4($t1)
+	li $t2, 0x00a775b0
+	sw $t2, 8($t1)
+	li $t2, 0x00000000
+	sw $t2, 12($t1)
+	li $t2, 0x00a775b0
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# THIRD LAYER of character
+	sw $t2, 0($t1)
+	li $t2, 0x00000000
+	sw $t2, 4($t1)
+	li $t2, 0x00a775b0
+	sw $t2, 8($t1)
+	li $t2, 0x00000000
+	sw $t2, 12($t1)
+	li $t2, 0x00a775b0
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# FOURTH LAYER of character
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# FIFTH LAYER of character
+	li $t2, 0x00a775b0
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	li $t2, 0x009a3048
+	sw $t2, 16($t1)
+
+	addi $t1, $t1, 256	# SIXTH LAYER of character
+	li $t2, 0x009a3048
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	
 	j print_enemy_prelude
 
 print_player: 
@@ -998,6 +1070,72 @@ print_enemy:
 	add $t1, $t3, $t1	# $t1 = e1.x * 4 + e1.y * 256
 	add $t1, $t0, $t1	# $t1 = base address + (e1.x * 4 + e1.y * 256)
 	
+	lw $t5, 8($t7)
+	bgtz $t5, print_enemy_right
+	bltz $t5, print_enemy_left
+	
+facing_test:
+	lw $t5, 16($t7)
+	beq $t5, 1, print_enemy_right
+	
+print_enemy_left:
+	li $t2, 0x00ca6037	# FIRST LAYER of character
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	
+	addi $t1, $t1, 256	# SECOND LAYER of character
+	sw $t2, 0($t1)
+	li $t2, 0x00000000
+	sw $t2, 4($t1)
+	li $t2, 0x00f1ad5c
+	sw $t2, 8($t1)
+	li $t2, 0x00000000
+	sw $t2, 12($t1)
+	li $t2, 0x00ca6037
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# THIRD LAYER of character
+	sw $t2, 0($t1)
+	li $t2, 0x00000000
+	sw $t2, 4($t1)
+	li $t2, 0x00f1ad5c
+	sw $t2, 8($t1)
+	li $t2, 0x00000000
+	sw $t2, 12($t1)
+	li $t2, 0x00ca6037
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# FOURTH LAYER of character
+	li $t2, 0x00f1ad5c
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	li $t2, 0x00ca6037
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# FIFTH LAYER of character
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	li $t2, 0x00f1ad5c
+	sw $t2, 16($t1)
+
+	addi $t1, $t1, 256	# SIXTH LAYER of character
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	
+	jr $ra
+	
+print_enemy_right:
 	li $t2, 0x00ca6037	# FIRST LAYER of character
 	sw $t2, 4($t1)
 	sw $t2, 8($t1)
@@ -1156,6 +1294,10 @@ a_pressed:
 	beq $s2, -4, side_collide	# Checking if max velocity
 	addi $s2, $s2, -2	# Changing x velocity -- Let acceleration be 1 for simplicity
 	
+	la $t3, kirby_facing		# Changing kirby facing
+	li $t4, 0
+	sw $t4, 0($t3)
+	
 	# Reduce y velocities to make transition more seamless
 	bltz $s3, neg_dy
 	j pos_dy
@@ -1163,6 +1305,10 @@ a_pressed:
 d_pressed:
 	beq $s2, 4, side_collide
 	addi $s2, $s2, 2
+	
+	la $t3, kirby_facing		# Changing kirby facing
+	li $t4, 1
+	sw $t4, 0($t3)
 	
 	# Reduce y velocities to make transition more seamless
 	bltz $s3, neg_dy
@@ -1294,7 +1440,6 @@ flip_enemy:
 	li $t6, -1
 	mult $t5, $t6
 	mflo $t5		# t5 = -e1.dx
-	
 	sw $t5, 8($t7)		# Saving new e1.dx in memory
 
 move_enemy:
@@ -1400,7 +1545,7 @@ enemy_stop:
 	lw $t5, 8($t7)
 	mult $t5, $t4
 	mflo $t5	
-	sw $t5, 8($t7)
+	sw $t5, 8($t7)		# Flipping enemy velocity
 	
 	jr $ra
 	
