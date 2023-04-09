@@ -2044,7 +2044,7 @@ projectile_move_prelude:
 	la $t7, kirby_attack_data
 	jal projectile_move
 
-	j enemy_collide_prelude
+	j projectile_collide_prelude
 	
 projectile_move:
 	lw $t8, 0($t7)		# $t8 = p.x
@@ -2067,6 +2067,86 @@ projectile_despawn:
 	
 	jr $ra
 
+
+### PROJECTILE COLISSIONS
+	# Let $t7, and $t8 hold enemy data
+	# Let $t2, $t3, $t4, $t5, $t6 be a TEMPORARY VARIABLES for calculations
+projectile_collide_prelude:
+	la $t8, kirby_attack_data
+	lw $t4, 0($t8)
+	bge $t4, 1000, enemy_collide_prelude	# In the case no projectiles exist
+	
+	la $t7, enemy_1_data
+	jal check_x_proj
+	la $t7, enemy_2_data
+	jal check_x_proj
+	la $t7, enemy_3_data
+	jal check_x_proj
+	
+	j enemy_collide_prelude
+	
+check_x_proj:
+	lw $t1,0($t8)		# Let $t1 = proj.x
+	lw $t2,4($t8)		# Let $t2 = proj.y
+	lw $t3,0($t7)		# Let $t3 = e.x
+	lw $t4,4($t7)		# Let $t4 = e.y
+	addi $t5, $t1, 6	# Let $t5 = p.x + 6
+	addi $t6, $t3, 6	# Let $t6 = e.x + 6	
+	
+	ble $t1, $t6, e_before_proj	# If p.x < e.x + 6
+	jr $ra			
+	
+e_before_proj:	
+	ble $t3, $t1, y_check_proj		# If e.x < p.x 
+	
+proj_before_e_prelude:
+	ble $t3, $t5, proj_before_e	# If e.x < p.x + 6
+	jr $ra
+
+proj_before_e:
+	ble $t1, $t3, y_check_proj		# If p.x < e.x
+	jr $ra
+
+y_check_proj:
+	addi $t5, $t2, 6	# Let $t5 = p.y + 6
+	addi $t6, $t4, 6	# Let $t6 = e.y + 6
+
+	ble $t2, $t6, proj_above_e	# If p.y < e.y + 6
+	jr $ra
+	
+proj_above_e:
+	bge $t2, $t4, proj_collide	# If p.y < e.y
+		
+e_above_proj_prelude:
+	ble $t4, $t5, e_above_proj	# If e.y < p.y + 6
+	jr $ra
+
+e_above_proj:
+	bge $t4, $t2, proj_collide	# If e.y < p.y
+	jr $ra
+
+proj_collide:
+	li $t2, 1000		# Setting out of bounds and motionless
+	sw $t2, 0($t8)
+	sw $t2, 4($t8)
+	li $t2, 0
+	sw $t2, 8($t8)
+	sw $t2, 12($t8)
+	
+	li $t2, 1000			# Setting enemy out of bounds
+	sw $t2, 0($t7)
+	sw $t2, 4($t7)
+	li $t2, 0
+	sw $t2, 8($t7)			# Stopping any enemies
+	sw $t2, 12($t7)
+	sw $t2, 20($t7)			# Branding enemy as dead
+	
+					# Starting cooldown until enemy respawns
+	lw $t2, 24($t7)
+	addi $t2, $t2, -100
+	sw $t2, 24($t7)
+	
+	jr $ra
 
 ### ENEMY COLISSIONS
 
