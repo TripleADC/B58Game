@@ -1727,7 +1727,7 @@ x_pressed:
 	addi $t4, $t4, -100
 	sw $t4, 0($t3)
 	
-	j gravity
+	j object_collide_prelude
 	
 p_pressed:
 	j game_start
@@ -2027,26 +2027,40 @@ enemy1_stop:
 	# Let $t7, and $t8 hold enemy data
 	# Let $t3, $t4, $t5, $t6, $s6, $s7 be a TEMPORARY VARIABLES for calculations
 object_collide_prelude:
+	la $t3, kirby_facing
+	lw $t4, 0($t3)
+	beq $t4, 1, object_collide_right
+	j object_collide_left
 
+object_collide_left:
 	la $t7, enemy_1_data	
-	addi $s6, $s0, 4	# Let $s6 = p.x + 6
-	jal check_x_object
 	addi $s6, $s0, -4	# Let $s6 = p.x - 4
 	jal check_x_object
 	
 	la $t7, enemy_2_data	
-	addi $s6, $s0, 4	# Let $s6 = p.x + 6
-	jal check_x_object
 	addi $s6, $s0, -4	# Let $s6 = p.x - 4
 	jal check_x_object
 	
 	la $t7, enemy_3_data
-	addi $s6, $s0, 4	# Let $s6 = p.x + 12
-	jal check_x_object
 	addi $s6, $s0, -4	# Let $s6 = p.x - 4
 	jal check_x_object
 	
-	j move_player
+	j gravity
+
+object_collide_right:
+	la $t7, enemy_1_data	
+	addi $s6, $s0, 6	# Let $s6 = p.x + 6
+	jal check_x_object
+	
+	la $t7, enemy_2_data	
+	addi $s6, $s0, 6	# Let $s6 = p.x + 6
+	jal check_x_object
+	
+	la $t7, enemy_3_data
+	addi $s6, $s0, 6	# Let $s6 = p.x + 6
+	jal check_x_object
+	
+	j gravity
 
 check_x_object:
 	lw $t3,0($t7)		# Let $t3 = e.x
@@ -2092,7 +2106,7 @@ object_collide:
 	sw $t2, 36($t1)
 	sw $t2, 40($t1)
 	
-	j move_player
+	j gravity
 
 ### MOVING PLAYER
 
