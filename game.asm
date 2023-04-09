@@ -47,6 +47,11 @@ kirby_health:	.word 5
 kirby_invincible_frames:	.word 2000
 kirby_attack_frames:		.word 1500
 
+# Let projectile data be read like: p.x, p.y, p.dx, p.dy, p.timer
+kirby_attack_data:	.word 1000, 1000, 0, 0, 0
+enemy_2_attack_data:	.word 1000, 1000, 0, 0, 10000
+enemy_3_attack_data:	.word 1000, 1000, 0, 0, 10000
+
 
 .eqv BASE_ADDRESS 0x10008000
 
@@ -1534,7 +1539,7 @@ print_enemy_prelude:
 	la $t7, enemy_3_data
 	jal print_enemy
 	
-	j print_hearts_prelude
+	j print_projectiles_prelude
 	
 print_enemy:
 	lw $t8, 0($t7)		# $t8 = e1.x
@@ -1675,6 +1680,58 @@ print_enemy_right:
 	
 	jr $ra
 	
+print_projectiles_prelude:
+	la $t7, kirby_attack_data
+	jal print_projectiles
+	
+	j print_hearts_prelude
+
+print_projectiles:
+	lw $t8, 0($t7)		# $t8 = e1.x
+	
+	sll $t3, $t8, 2 	# $t3 = e1.x * 4 = e1.x * pixel size
+	addi $t1, $t3, 0	# $t1 = e1.x * 4
+	
+	li $t4, 256		# $t4 = 256 = screen width
+	lw $t8, 4($t7)		# $t8 = e1.y
+	
+	addi $t3, $t8, 0	# $t3 = e1.y
+	mult $t3, $t4		# $t3 = e1.y * 256
+	mflo $t3
+	
+	add $t1, $t3, $t1	# $t1 = e1.x * 4 + e1.y * 256
+	add $t1, $t0, $t1	# $t1 = base address + (e1.x * 4 + e1.y * 256)
+	
+	li $t2, 0x00f1ad5c	# FIRST LAYER of character
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	
+	addi $t1, $t1, 256	# SECOND LAYER of character
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	
+	addi $t1, $t1, 256	# THIRD LAYER of character
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# FOURTH LAYER of character
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	
+	addi $t1, $t1, 256	# FIFTH LAYER of character
+	sw $t2, 4($t1)
+	sw $t2, 16($t1)
+	
+	jr $ra
+	
 	# Let $t1, $t2, $t3, $t4, $t5, $t6 be temporary variables
 print_hearts_prelude:
 	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
@@ -1808,6 +1865,47 @@ x_pressed:
 	addi $t4, $t4, -100
 	sw $t4, 0($t3)
 	
+	la $t3, kirby_full			# Checking if kirby is full
+	lw $t4, 0($t3)
+	beq $t4, 1, x_pressed_full_prelude
+	
+	j object_collide_prelude
+	
+x_pressed_full_prelude:	
+	la $t3, kirby_facing
+	lw $t4, 0($t3)
+	beq $t4, 1, x_pressed_full_right
+
+x_pressed_full_left:
+	la $t3, kirby_attack_data
+	addi $t4, $s0, -1			# Spawning star near player position
+	sw $t4, 0($t3)
+	sw $s1, 4($t3)
+	li $t4, -2
+	sw $t4, 8($t3)
+	li $t4, 0
+	sw $t4, 12($t3)
+	
+	la $t3, kirby_full			# Updating kirby so that he is not full anymore
+	li $t4, 0
+	sw $t4, 0($t3)
+	
+	j object_collide_prelude
+	
+x_pressed_full_right:
+	la $t3, kirby_attack_data
+	addi $t4, $s0, 6			# Spawning star near player position
+	sw $t4, 0($t3)
+	sw $s1, 4($t3)
+	li $t4, 2
+	sw $t4, 8($t3)
+	li $t4, 0
+	sw $t4, 12($t3)
+	
+	la $t3, kirby_full			# Updating kirby so that he is not full anymore
+	li $t4, 0
+	sw $t4, 0($t3)
+
 	j object_collide_prelude
 	
 p_pressed:
@@ -1914,7 +2012,7 @@ enemy_move_prelude_pre:
 	la $t7, enemy_3_data
 	jal move_enemy_prelude
 	
-	j enemy_collide_prelude
+	j projectile_move_prelude
 
 	# Let $t7, and $t8 hold enemy data
 	# Let $t5, $t6 be a TEMPORARY VARIABLES for calculations
@@ -1938,6 +2036,37 @@ move_enemy:
 	
 	sw $t8, 0($t7)		# Saving new e1.x in memory
 	jr $ra
+	
+### PROJECTILE MOVEMENTS
+	# Let $t7, and $t8 hold enemy data
+	# Let $t5, $t6 be a TEMPORARY VARIABLES for calculations
+projectile_move_prelude:
+	la $t7, kirby_attack_data
+	jal projectile_move
+
+	j enemy_collide_prelude
+	
+projectile_move:
+	lw $t8, 0($t7)		# $t8 = p.x
+	lw $t5, 8($t7)		# $t5 = p.dx
+	
+	add $t8, $t8, $t5	# $t8 = p.x + p.dx
+	sw $t8, 0($t7)
+	
+	bge $t8, 56, projectile_despawn
+	ble $t8, 4, projectile_despawn
+	jr $ra
+	
+projectile_despawn:
+	li $t8, 1000		# Setting out of bounds and motionless
+	sw $t8, 0($t7)
+	sw $t8, 4($t7)
+	li $t8, 0
+	sw $t8, 8($t7)
+	sw $t8, 12($t7)
+	
+	jr $ra
+
 
 ### ENEMY COLISSIONS
 
@@ -2178,15 +2307,6 @@ o_above_p:
 	jr $ra
 
 object_collide:
-	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
-	li $t2, 0x00e23131		# 2nd LAYER of screen
-	
-	sw $t2, 24($t1)
-	sw $t2, 28($t1)
-	sw $t2, 32($t1)
-	sw $t2, 36($t1)
-	sw $t2, 40($t1)
-	
 	li $t2, 1000			# Setting enemy out of bounds
 	sw $t2, 0($t7)
 	sw $t2, 4($t7)
@@ -2199,6 +2319,11 @@ object_collide:
 	lw $t2, 24($t7)
 	addi $t2, $t2, -100
 	sw $t2, 24($t7)
+	
+					# Setting kirby as "full"
+	la $t4, kirby_full
+	li $t2, 1
+	sw $t2, 0($t4)
 	
 	j gravity
 
