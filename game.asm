@@ -847,7 +847,9 @@ print_player_prelude:
 	blt $t4, 2000, print_player_invincible
 	la $t3, kirby_facing
 	lw $t4, 0($t3)				# Checking if kirby is facing left
-	beq $t4, 0, print_player_left
+	beq $t4, 0, print_player_left_prelude
+	ble $s3, -5, print_player_jumping_right
+	bge $s3, 2, print_player_falling_right
 	j print_player
 	
 print_player_invincible:
@@ -905,6 +907,140 @@ print_player_invincible:
 	sw $t2, 16($t1)
 	sw $t2, 20($t1)
 
+	j print_enemy_prelude
+
+print_player_left_prelude:
+	ble $s3, -5, print_player_jumping_left
+	bge $s3, 2, print_player_falling_left
+	j print_player_left
+
+print_player_jumping_left:
+	sll $t3, $s0, 2 	# $t3 = p.x * 4 = p.x * pixel size
+	addi $t1, $t3, 0	# $t1 = p.x * 4
+	
+	li $t4, 256		# $t4 = 256 = screen width
+	addi $t3, $s1, 0	# $t3 = p.y
+	mult $t3, $t4		# $t3 = p.y * 256
+	mflo $t3
+	
+	add $t1, $t3, $t1	# $t1 = p.x * 4 + p.y * 256
+	add $t1, $t0, $t1	# $t1 = base address + (p.x * 4 + p.y * 256)
+	
+	li $t2, 0x00a775b0	# FIRST LAYER of character
+	sw $t2, 0($t1)
+	li $t2, 0x00000000
+	sw $t2, 4($t1)
+	li $t2, 0x00a775b0
+	sw $t2, 8($t1)
+	li $t2, 0x00000000
+	sw $t2, 12($t1)
+	li $t2, 0x00a775b0
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# SECOND LAYER of character
+	sw $t2, 0($t1)
+	li $t2, 0x00000000
+	sw $t2, 4($t1)
+	li $t2, 0x00a775b0
+	sw $t2, 8($t1)
+	li $t2, 0x00000000
+	sw $t2, 12($t1)
+	li $t2, 0x00a775b0
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# THIRD LAYER of character
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# FOURTH LAYER of character
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	
+	addi $t1, $t1, 256	# FIFTH LAYER of character
+	li $t2, 0x00a775b0
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	li $t2, 0x009a3048
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+
+	addi $t1, $t1, 256	# SIXTH LAYER of character
+	li $t2, 0x009a3048
+	sw $t2, 4($t1)
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	
+	j print_enemy_prelude
+	
+print_player_falling_left:
+	sll $t3, $s0, 2 	# $t3 = p.x * 4 = p.x * pixel size
+	addi $t1, $t3, 0	# $t1 = p.x * 4
+	
+	li $t4, 256		# $t4 = 256 = screen width
+	addi $t3, $s1, 0	# $t3 = p.y
+	mult $t3, $t4		# $t3 = p.y * 256
+	mflo $t3
+	
+	add $t1, $t3, $t1	# $t1 = p.x * 4 + p.y * 256
+	add $t1, $t0, $t1	# $t1 = base address + (p.x * 4 + p.y * 256)
+	
+	li $t2, 0x009a3048 	# FIRST LAYER of character
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	
+	addi $t1, $t1, 256	# SECOND LAYER of character
+	li $t2, 0x00a775b0
+	sw $t2, 0($t1)
+	li $t2, 0x009a3048
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	li $t2, 0x00a775b0
+	sw $t2, 12($t1)
+	li $t2, 0x009a3048
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# THIRD LAYER of character
+	li $t2, 0x00a775b0
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	li $t2, 0x009a3048
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# FOURTH LAYER of character
+	li $t2, 0x00a775b0
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# FIFTH LAYER of character
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+
+	addi $t1, $t1, 256	# SIXTH LAYER of character
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	
 	j print_enemy_prelude
 
 print_player_left:
@@ -974,6 +1110,134 @@ print_player_left:
 	sw $t2, 20($t1)
 	
 	j print_enemy_prelude
+	
+print_player_jumping_right:
+	sll $t3, $s0, 2 	# $t3 = p.x * 4 = p.x * pixel size
+	addi $t1, $t3, 0	# $t1 = p.x * 4
+	
+	li $t4, 256		# $t4 = 256 = screen width
+	addi $t3, $s1, 0	# $t3 = p.y
+	mult $t3, $t4		# $t3 = p.y * 256
+	mflo $t3
+	
+	add $t1, $t3, $t1	# $t1 = p.x * 4 + p.y * 256
+	add $t1, $t0, $t1	# $t1 = base address + (p.x * 4 + p.y * 256)
+	
+	li $t2, 0x00a775b0	# FIRST LAYER of character
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	li $t2, 0x00000000
+	sw $t2, 8($t1)
+	li $t2, 0x00a775b0
+	sw $t2, 12($t1)
+	li $t2, 0x00000000
+	sw $t2, 16($t1)
+	li $t2, 0x00a775b0
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# SECOND LAYER of character
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	li $t2, 0x00000000
+	sw $t2, 8($t1)
+	li $t2, 0x00a775b0
+	sw $t2, 12($t1)
+	li $t2, 0x00000000
+	sw $t2, 16($t1)
+	li $t2, 0x00a775b0
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# THIRD LAYER of character
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# FOURTH LAYER of character
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	
+	addi $t1, $t1, 256	# FIFTH LAYER of character
+	li $t2, 0x009a3048
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	li $t2, 0x00a775b0
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+
+	addi $t1, $t1, 256	# SIXTH LAYER of character
+	li $t2, 0x009a3048
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	sw $t2, 16($t1)
+	
+	j print_enemy_prelude
+	
+print_player_falling_right:
+	sll $t3, $s0, 2 	# $t3 = p.x * 4 = p.x * pixel size
+	addi $t1, $t3, 0	# $t1 = p.x * 4
+	
+	li $t4, 256		# $t4 = 256 = screen width
+	addi $t3, $s1, 0	# $t3 = p.y
+	mult $t3, $t4		# $t3 = p.y * 256
+	mflo $t3
+	
+	add $t1, $t3, $t1	# $t1 = p.x * 4 + p.y * 256
+	add $t1, $t0, $t1	# $t1 = base address + (p.x * 4 + p.y * 256)
+	
+	li $t2, 0x009a3048 	# FIRST LAYER of character
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	
+	addi $t1, $t1, 256	# SECOND LAYER of character
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	li $t2, 0x00a775b0
+	sw $t2, 8($t1)
+	li $t2, 0x009a3048
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	li $t2, 0x00a775b0
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# THIRD LAYER of character
+	li $t2, 0x009a3048
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	li $t2, 0x00a775b0
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# FOURTH LAYER of character
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# FIFTH LAYER of character
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+
+	addi $t1, $t1, 256	# SIXTH LAYER of character
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	
+	j print_enemy_prelude
+	
 
 print_player: 
 	sll $t3, $s0, 2 	# $t3 = p.x * 4 = p.x * pixel size
