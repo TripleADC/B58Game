@@ -38,11 +38,12 @@
 .data
 # Let enemy data be read like player data: e.x, e.y, e.dx, e.dy, e.alive, e.timer
 enemy_1_data:	.word 30, 54, 1, 0, 1, 5000
-enemy_2_data:	.word 50, 21, 0, 0, 1, 5000
+enemy_2_data:	.word 54, 21, 0, 0, 1, 5000
 enemy_3_data:	.word 4, 36, 0, 0, 1, 5000
 
 kirby_full:	.word 0
 kirby_health:	.word 5
+kirby_invincible_frames:	.word 2000
 
 
 .eqv BASE_ADDRESS 0x10008000
@@ -65,6 +66,10 @@ game_start:
 	li $s2, 0
 	li $s3, 0
 	
+	la $t3, kirby_health
+	li $t4, 5
+	sw $t4, 0($t3)
+	
 	# Initializing enemy 1 data
 	la $t7, enemy_1_data
 	li $t3, 30
@@ -76,14 +81,14 @@ game_start:
 	
 	# Initializing enemy 2 data
 	la $t7, enemy_2_data
-	li $t3, 50
+	li $t3, 56
 	sw $t3, 0($t7)		
 	li $t3, 21
 	sw $t3, 4($t7)
 	
 	# Initializing enemy 3 data
 	la $t7, enemy_3_data
-	li $t3, 4
+	li $t3, 2
 	sw $t3, 0($t7)		
 	li $t3, 36
 	sw $t3, 4($t7)
@@ -92,9 +97,34 @@ loop:
 	li $v0, 32
 	li $a0, 30	# Achieving 24fps
 	syscall
+	
+### HEALTH AND INVINCIBILITY
+
+	# Let $t1, $t2, $t3, $t4 be temporary variables
+health_check:
+	la $t1, kirby_health
+	lw $t2, 0($t1)
+	blez $t2, exit
+	
+invincible_check:
+	la $t1, kirby_invincible_frames
+	lw $t2, 0($t1)
+	blt $t2, 2000, invincible_decrement
+	j background_draw_prelude
+	
+invincible_decrement:
+	addi $t2, $t2, -100
+	sw $t2, 0($t1)
+	
+	blez $t2, invincible_update
+	j background_draw_prelude
+	
+invincible_update:
+	li $t2, 2000
+	sw $t2, 0($t1)
 
 ### DRAWING BACKGROUND
-
+background_draw_prelude:
 	# TO-DO: Draw background from file
 
 	# Let $t1 be the address that traverses through the screen
@@ -734,7 +764,7 @@ floor_prelude:
 	li $t4, 0
 	
 floor:
-	beq $t3, $t4, print_player
+	beq $t3, $t4, print_player_prelude
 	addi $t1, $t1, 256
 	
 	sw $t2, 0($t1)
@@ -806,10 +836,73 @@ floor:
 	j floor
 
 ### DRAWING PLAYER
-
 	# Let $t1 store the address of where the player character should be printed
 	# Let $t2 store colours that will be printed
 	# Let $t3, $t4 be a TEMPORARY register for calculations in this label
+	
+print_player_prelude:
+	la $t3, kirby_invincible_frames	# Checking if kirby is invincible
+	lw $t4, 0($t3)
+	blt $t4, 2000, print_player_invincible
+	j print_player
+	
+print_player_invincible:
+	sll $t3, $s0, 2 	# $t3 = p.x * 4 = p.x * pixel size
+	addi $t1, $t3, 0	# $t1 = p.x * 4
+	
+	li $t4, 256		# $t4 = 256 = screen width
+	addi $t3, $s1, 0	# $t3 = p.y
+	mult $t3, $t4		# $t3 = p.y * 256
+	mflo $t3
+	
+	add $t1, $t3, $t1	# $t1 = p.x * 4 + p.y * 256
+	add $t1, $t0, $t1	# $t1 = base address + (p.x * 4 + p.y * 256)
+	
+	li $t2, 0x00ffe8ff	# FIRST LAYER of character
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	
+	addi $t1, $t1, 256	# SECOND LAYER of character
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# THIRD LAYER of character
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# FOURTH LAYER of character
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	
+	addi $t1, $t1, 256	# FIFTH LAYER of character
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+
+	addi $t1, $t1, 256	# SIXTH LAYER of character
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+
+	j print_enemy_prelude
+
 print_player: 
 	sll $t3, $s0, 2 	# $t3 = p.x * 4 = p.x * pixel size
 	addi $t1, $t3, 0	# $t1 = p.x * 4
@@ -877,7 +970,8 @@ print_player:
 	sw $t2, 20($t1)
 	
 ### DRAWING ENEMIES
-	
+
+print_enemy_prelude:	
 	# Let $t7, and $t8 hold enemy data
 	la $t7, enemy_1_data
 	jal print_enemy
@@ -886,7 +980,7 @@ print_player:
 	la $t7, enemy_3_data
 	jal print_enemy
 	
-	j control_prelude
+	j print_hearts_prelude
 	
 print_enemy:
 	lw $t8, 0($t7)		# $t8 = e1.x
@@ -960,6 +1054,84 @@ print_enemy:
 	sw $t2, 20($t1)
 	
 	jr $ra
+	
+	# Let $t1, $t2, $t3, $t4, $t5, $t6 be temporary variables
+print_hearts_prelude:
+	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
+	li $t2, 0x00a775b0		
+	la $t3, kirby_health
+	lw $t4, 0($t3)
+	
+print_heart_1:
+	addi $t1, $t1, 256
+	sw $t2, 4($t1)
+	sw $t2, 12($t1)
+	addi $t1, $t1, 256
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	addi $t1, $t1, 256
+	sw $t2, 8($t1)
+	
+	bgt $t4, 1, print_heart_2
+	j control_prelude
+	
+print_heart_2:
+	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
+	addi $t1, $t1, 256
+	sw $t2, 20($t1)
+	sw $t2, 28($t1)
+	addi $t1, $t1, 256
+	sw $t2, 20($t1)
+	sw $t2, 24($t1)
+	sw $t2, 28($t1)
+	addi $t1, $t1, 256
+	sw $t2, 24($t1)
+	
+	bgt $t4, 2, print_heart_3
+	j control_prelude
+	
+print_heart_3:
+	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
+	addi $t1, $t1, 256
+	sw $t2, 36($t1)
+	sw $t2, 44($t1)
+	addi $t1, $t1, 256
+	sw $t2, 36($t1)
+	sw $t2, 40($t1)
+	sw $t2, 44($t1)
+	addi $t1, $t1, 256
+	sw $t2, 40($t1)
+	
+	bgt $t4, 3, print_heart_4
+	j control_prelude
+	
+print_heart_4:
+	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
+	addi $t1, $t1, 256
+	sw $t2, 52($t1)
+	sw $t2, 60($t1)
+	addi $t1, $t1, 256
+	sw $t2, 52($t1)
+	sw $t2, 56($t1)
+	sw $t2, 60($t1)
+	addi $t1, $t1, 256
+	sw $t2, 56($t1)
+	
+	bgt $t4, 4, print_heart_5
+	j control_prelude
+	
+print_heart_5:
+	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
+	addi $t1, $t1, 256
+	sw $t2, 68($t1)
+	sw $t2, 76($t1)
+	addi $t1, $t1, 256
+	sw $t2, 68($t1)
+	sw $t2, 72($t1)
+	sw $t2, 76($t1)
+	addi $t1, $t1, 256
+	sw $t2, 72($t1)
 	
 control_prelude:
 	
@@ -1197,18 +1369,23 @@ check_velocity_down:
 	j enemy_collide
 
 enemy_collide:
-	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
-	li $t2, 0x00e23131		# 2nd LAYER of screen
 	
-	sw $t2, 0($t1)			# TO-DO: Delete later
-	sw $t2, 4($t1)
-	sw $t2, 8($t1)
-	sw $t2, 12($t1)
-	sw $t2, 16($t1)
-	
-	li $t4, -1
+	li $t4, -1	# Making bounce	
 	mult $s2, $t4
 	mflo $s2
+	
+reduce_health:
+	la $t1, kirby_health	# Reducing health
+	lw $t2, 0($t1)		
+	la $t3, kirby_invincible_frames
+	lw $t4, 0($t3)
+	
+	blt $t4, 2000, gravity_bounce
+	
+	addi $t2, $t2, -1	# Updating health
+	sw $t2, 0($t1)
+	addi $t4, $t4, -100	# Kickstarting invincibility frames
+	sw $t4, 0($t3)
 
 gravity_bounce:
 	ble $s3, -3, enemy_stop_prelude
