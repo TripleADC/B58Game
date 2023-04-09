@@ -981,7 +981,7 @@ control:
 	beq $t4, 0x70, p_pressed
 	
 a_pressed:
-	beq $s2, -6, side_collide	# Checking if max velocity
+	beq $s2, -4, side_collide	# Checking if max velocity
 	addi $s2, $s2, -2	# Changing x velocity -- Let acceleration be 1 for simplicity
 	
 	# Reduce y velocities to make transition more seamless
@@ -989,7 +989,7 @@ a_pressed:
 	j pos_dy
 
 d_pressed:
-	beq $s2, 6, side_collide
+	beq $s2, 4, side_collide
 	addi $s2, $s2, 2
 	
 	# Reduce y velocities to make transition more seamless
@@ -1041,12 +1041,14 @@ gravity:
 ### EDGE COLISSION
 side_collide:
 	ble $s0, 56, side_collide_2
+	li $s0, 56
 	li $t5, -1
 	mult $s2, $t5	# Bounce off edge
 	mflo $s2
 	
 side_collide_2:
 	bge $s0, 4, floor_collide
+	li $s0, 4
 	li $t5, -1
 	mult $s2, $t5	# Bounce off edge
 	mflo $s2
@@ -1143,7 +1145,7 @@ enemy_collide_prelude:
 	la $t7, enemy_3_data
 	jal check_x
 	
-	j move_player	# TO-DO: Delete later
+	j enemy_1_collide_prelude	# TO-DO: Delete later
 
 check_x:
 	lw $t3,0($t7)		# Let $t3 = e.x
@@ -1166,43 +1168,55 @@ p_before_e:
 	jr $ra
 	
 check_velocity_left:
-	bltz $s2, y_check
+	blez $s2, y_check
 	jr $ra
 	
 check_velocity_right:
-	bgtz $s2, y_check
+	bgez $s2, y_check
 	jr $ra
 
 y_check:
 	addi $t5, $s1, 6	# Let $t5 = p.y + 6
 	addi $t6, $t4, 6	# Let $t6 = e.y + 6
 
-	ble $s1, $t6, e_above_p	# If p.y < e.y + 6
-	ble $t4, $t5, p_above_e	# If e.y < p.y + 6
+	ble $s1, $t6, p_above_e	# If p.y < e.y + 6
 	jr $ra
 	
 p_above_e:
-	bge $t4, $s1, enemy_collide	# If e.y < p.y
+	bge $s1, $t4, check_velocity_down	# If p.y < e.y
+		
+e_above_p_prelude:
+	ble $t4, $t5, e_above_p	# If e.y < p.y + 6
 	jr $ra
 
 e_above_p:
-	bge $s1, $t4, enemy_collide	# If p.y < e.y
+	bge $t4, $s1, check_velocity_down	# If e.y < p.y
 	jr $ra
+	
+check_velocity_down:
+	j enemy_collide
 
 enemy_collide:
 	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
 	li $t2, 0x00e23131		# 2nd LAYER of screen
 	
-	sw $t2, 0($t1)
+	sw $t2, 0($t1)			# TO-DO: Delete later
 	sw $t2, 4($t1)
 	sw $t2, 8($t1)
 	sw $t2, 12($t1)
 	sw $t2, 16($t1)
 	
-	li $s2, 0
-	
+	li $t4, -1
+	mult $s2, $t4
+	mflo $s2
+
+gravity_bounce:
+	ble $s3, -3, enemy_stop_prelude
+	addi $s3, $s3, -3
+
+enemy_stop_prelude:	
 	beq $t7, $t8, enemy_stop
-	jr $ra
+	jr $ra		
 
 enemy_stop:
 	li $t4, -1
@@ -1212,6 +1226,71 @@ enemy_stop:
 	sw $t5, 8($t7)
 	
 	jr $ra
+	
+enemy_1_collide_prelude:
+	la $t7, enemy_1_data
+	jal check_x_e1
+	
+	j move_player
+	
+check_x_e1:
+	lw $t3,0($t7)		# Let $t3 = e.x
+	lw $t4,4($t7)		# Let $t4 = e.y
+	addi $t5, $s0, 6	# Let $t5 = p.x + 6
+	addi $t6, $t3, 6	# Let $t6 = e.x + 6	
+	
+	ble $s0, $t6, e1_before_p	# If p.x < e.x + 6
+	jr $ra			
+	
+e1_before_p:	
+	ble $t3, $s0, y_check_e1		# If e.x < p.x 
+	
+p_before_e1_prelude:
+	ble $t3, $t5, p_before_e1	# If e.x < p.x + 6
+	jr $ra
+
+p_before_e1:
+	ble $s0, $t3, y_check_e1	# If p.x < e.x
+	jr $ra
+
+y_check_e1:
+	addi $t5, $s1, 6	# Let $t5 = p.y + 6
+	addi $t6, $t4, 6	# Let $t6 = e.y + 6
+
+	ble $s1, $t6, e1_above_p	# If p.y < e.y + 6
+	ble $t4, $t5, p_above_e1	# If e.y < p.y + 6
+	jr $ra
+	
+p_above_e1:
+	bge $t4, $s1, enemy1_collide	# If e.y < p.y
+	jr $ra
+
+e1_above_p:
+	bge $s1, $t4, enemy1_collide	# If p.y < e.y
+	jr $ra
+
+enemy1_collide:
+	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
+	li $t2, 0x00e23131		# 2nd LAYER of screen
+	
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	sw $t2, 16($t1)
+	
+	beq $t7, $t8, enemy1_stop
+	jr $ra
+
+enemy1_stop:
+	li $t4, -1
+	lw $t5, 8($t7)
+	mult $t5, $t4
+	mflo $t5	
+	sw $t5, 8($t7)
+	
+	jr $ra
+	
 
 	# Let $t7, and $t8 hold enemy data
 	# Let $t3, $t4, $t5, $t6, $s6, $s7 be a TEMPORARY VARIABLES for calculations
