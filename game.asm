@@ -14,25 +14,76 @@
 # - Base Address for Display: 0x10008000 ($gp)
 #
 # Which milestones have been reached in this submission?
-# (See the assignment handout for descriptions of the milestones)
-# - Milestone 1/2/3 (choose the one the applies)
+# - Milestone 3 
 #
 # Which approved features have been implemented for milestone 3?
-# (See the assignment handout for the list of additional features)
-# 1. (fill in the feature, if any)
-# 2. (fill in the feature, if any)
-# 3. (fill in the feature, if any)
-# ... (add more if necessary)
+# 1. Health/Score (2 Points)
+# 2. Fail Condition (1 Point)
+# 3. Win Condition (1 Point)
+# 4. Moving Objects (2 Points)
+# 5. Shoot Enemies (2 Points)
+# 6. Enemies Shoot Back! (2 Points)
+# 7. Animated Sprites (2 Points)
 #
 # Link to video demonstration for final submission:
-# - (insert YouTube / MyMedia / other URL here). Make sure we can view it!
+# - 
 #
 # Are you OK with us sharing the video with people outside course staff?
-# - yes / no / yes, and please share this project github link as well!
+# - yes
 #
 # Any additional information that the TA needs to know:
-# - (write here, if any)
 #
+# CONTROLS (Case-sensitive):
+# w: Jump
+# a: Move left
+# d: Move right
+# x: Attack (Inhale/Exhale)
+# z: Consume
+#
+# ATTACKS:
+# Kirby has two states: Empty and full
+#
+# If Kirby is empty, by pressing x beside facing an enemy, he will inhale them
+# The enemy is transformed into a star, and will make Kirby full
+#
+# If Kirby is full, by pressing x, a star projectile will be exhaled in the direction Kirby is facing
+# This star can defeat enemies
+# By exhaling, Kirby will no longer be full
+#
+# CONSUMING:
+# If kirby is full, by pressing z, he will consume the enemy he just inhaled
+# This will restore 1 heart of health
+# By consuming, Kirby will no longer be full
+#
+# ENEMIES:
+# There are two types of enemies: stationary and moving
+# 
+# Stationary enemies will shoot a star back at Kirby for revenge whenever Kirby exhales
+# Make sure to inhale them, or shoot them from a distance, to ensure Kirby doesn't get hurt by them
+#
+# Moving enemies will not shoot back at Kirby, but will patrol the platforms they are on, acting as obstacles
+#
+# Enemies will respawn a short time after they are defeated
+# Make sure to be wary of when/where they will respawn to avoid hurting Kirby!
+#
+# HEALTH/DAMAGE:
+# When Kirby is hurt, he will be given invincibility frames for a short amount of time
+# If Kirby's health goes to 0, the player will lose the game
+#
+# SCORING:
+# Kirby needs help restoring the star rod, and can only do so by defeating enemies!
+# 
+# By inhaling enemies, Kirby gains 1 point towards restoring the star rod
+# By defeating enemies via star projectile, Kirby gains 2 points toward restoring the star rod
+#
+# Kirby gains no points for further consuming enemies and restoring his health
+#
+# By accumulating 10 points, the bottom of the star rod will be restored
+# By accumulating 20 points, the middle of the star rod will be restored
+# By accumulating 25 points, the the top of the star rod will be restored, and will start to power up!
+#
+# The star rod will return to full power once Kirby has gained 30 or more points, allowing the player to win
+# 
 #####################################################################
 
 .data
