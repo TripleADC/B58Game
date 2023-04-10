@@ -53,7 +53,6 @@ enemy_3_attack_data:	.word 1000, 1000, 0, 0, 0
 
 score:	.word 0
 
-
 .eqv BASE_ADDRESS 0x10008000
 
 .text
@@ -168,7 +167,12 @@ loop:
 health_check:
 	la $t1, kirby_health
 	lw $t2, 0($t1)
-	blez $t2, exit
+	blez $t2, background_draw_end_prelude
+	
+score_check:
+	la $t1, score
+	lw $t2, 0($t1)
+	bge $t2, 30, background_draw_end_prelude
 	
 invincible_check:
 	la $t1, kirby_invincible_frames
@@ -1810,7 +1814,7 @@ print_heart_1:
 	sw $t2, 8($t1)
 	
 	bgt $t4, 1, print_heart_2
-	j control_prelude
+	j print_score_prelude
 	
 print_heart_2:
 	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
@@ -1825,7 +1829,7 @@ print_heart_2:
 	sw $t2, 24($t1)
 	
 	bgt $t4, 2, print_heart_3
-	j control_prelude
+	j print_score_prelude
 	
 print_heart_3:
 	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
@@ -1840,7 +1844,7 @@ print_heart_3:
 	sw $t2, 40($t1)
 	
 	bgt $t4, 3, print_heart_4
-	j control_prelude
+	j print_score_prelude
 	
 print_heart_4:
 	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
@@ -1855,7 +1859,7 @@ print_heart_4:
 	sw $t2, 56($t1)
 	
 	bgt $t4, 4, print_heart_5
-	j control_prelude
+	j print_score_prelude
 	
 print_heart_5:
 	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
@@ -1868,6 +1872,104 @@ print_heart_5:
 	sw $t2, 76($t1)
 	addi $t1, $t1, 256
 	sw $t2, 72($t1)
+	
+print_score_prelude:
+	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS		
+	la $t3, score
+	lw $t4, 0($t3)
+	blt $t4, 10, control_prelude
+	
+print_score_1:
+	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
+	addi $t1, $t1, 256
+	addi $t1, $t1, 256
+	li $t2, 0x00fb6161
+	sw $t2, 224($t1)
+	sw $t2, 228($t1)
+	li $t2, 0x00d2e2e4
+	sw $t2, 232($t1)
+	sw $t2, 236($t1)
+	li $t2, 0x00fb6161
+	sw $t2, 240($t1)
+	sw $t2, 244($t1)
+	
+	addi $t1, $t1, 256
+	li $t2, 0x00fb6161
+	sw $t2, 224($t1)
+	li $t2, 0x00d2e2e4
+	sw $t2, 228($t1)
+	sw $t2, 232($t1)
+	li $t2, 0x00fb6161
+	sw $t2, 236($t1)
+	sw $t2, 240($t1)
+	li $t2, 0x00d2e2e4
+	sw $t2, 244($t1)
+	
+	blt $t4, 20, control_prelude
+	
+print_score_2:
+	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
+	addi $t1, $t1, 256
+	addi $t1, $t1, 256
+	li $t2, 0x00d2e2e4
+	sw $t2, 200($t1)
+	sw $t2, 204($t1)
+	li $t2, 0x00fb6161
+	sw $t2, 208($t1)
+	sw $t2, 212($t1)
+	li $t2, 0x00d2e2e4
+	sw $t2, 216($t1)
+	sw $t2, 220($t1)
+	
+	addi $t1, $t1, 256
+	li $t2, 0x00d2e2e4
+	sw $t2, 200($t1)
+	li $t2, 0x00fb6161
+	sw $t2, 204($t1)
+	sw $t2, 208($t1)
+	li $t2, 0x00d2e2e4
+	sw $t2, 212($t1)
+	sw $t2, 216($t1)
+	li $t2, 0x00fb6161
+	sw $t2, 220($t1)
+	
+	blt $t4, 25, control_prelude
+	
+print_score_3:
+	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
+	li $t2, 0x00f1ad5c
+	sw $t2, 184($t1)
+	addi $t1, $t1, 256
+	sw $t2, 180($t1)
+	sw $t2, 184($t1)
+	sw $t2, 188($t1)
+	sw $t2, 192($t1)
+	addi $t1, $t1, 256
+	sw $t2, 176($t1)
+	sw $t2, 180($t1)
+	sw $t2, 184($t1)
+	sw $t2, 188($t1)
+	li $t2, 0x00fb6161
+	sw $t2, 192($t1)
+	sw $t2, 196($t1)
+	addi $t1, $t1, 256
+	li $t2, 0x00f1ad5c
+	sw $t2, 176($t1)
+	sw $t2, 180($t1)
+	sw $t2, 184($t1)
+	sw $t2, 188($t1)
+	li $t2, 0x00fb6161
+	sw $t2, 192($t1)
+	li $t2, 0x00d2e2e4
+	sw $t2, 196($t1)
+	addi $t1, $t1, 256
+	li $t2, 0x00f1ad5c
+	sw $t2, 180($t1)
+	sw $t2, 184($t1)
+	sw $t2, 188($t1)
+	sw $t2, 192($t1)
+	addi $t1, $t1, 256
+	sw $t2, 184($t1)
 	
 control_prelude:
 	
@@ -1964,7 +2066,7 @@ x_pressed_full_left:
 	
 	la $t3, kirby_full			# Updating kirby so that he is not full anymore
 	li $t4, 0
-	sw $t4, 0($t3)
+	sw $t4, 0($t3)				
 	
 	j object_collide_prelude
 	
@@ -2233,6 +2335,12 @@ proj_collide:
 	lw $t2, 24($t7)
 	addi $t2, $t2, -100
 	sw $t2, 24($t7)
+	
+		# Updating score
+	la $t5, score
+	lw $t6, 0($t5)
+	addi $t6, $t6, 2
+	sw $t6, 0($t5)
 	
 	jr $ra
 	
@@ -2567,6 +2675,12 @@ object_collide:
 	li $t2, 1
 	sw $t2, 0($t4)
 	
+					# Updating score
+	la $t5, score
+	lw $t6, 0($t5)
+	addi $t6, $t6, 1
+	sw $t6, 0($t5)
+	
 	j gravity
 
 ### MOVING PLAYER
@@ -2579,7 +2693,258 @@ move_player:
 
 go_back:
 	j loop
-exit: 
+
+ background_draw_end_prelude:
+	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
+	li $t2, 0x00000000		# $t2 = Black
+	li $t3, BASE_ADDRESS
+	addi $t3, $t3, 16624		# $t3 = BASE_ADDRESS + 16624
+	
+background_draw_end_loop:
+	bge $t1, $t3, exit_prelude
+	sw $t2, 0($t1)			# Printing dot
+	addi $t1, $t1, 4		# Incrementing along screen
+	j background_draw_end_loop
+
+exit_prelude:
+	la $t1, kirby_health
+	lw $t2, 0($t1)
+	blez $t2, background_draw_win
+	
+	j background_draw_win
+	
+background_draw_lose:
+
+	
+	
+	j exit
+	
+background_draw_win:
+	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
+	li $t2, 0x00d2e2e4		# $t2 = white
+	
+	addi $t1, $t1, 3328		# 13th layer
+	sw $t2, 60($t1)
+	sw $t2, 80($t1)
+	sw $t2, 116($t1)
+	sw $t2, 140($t1)
+	sw $t2, 156($t1)
+	sw $t2, 160($t1)
+	sw $t2, 164($t1)
+	sw $t2, 168($t1)
+	sw $t2, 184($t1)
+	sw $t2, 200($t1)
+	
+	addi $t1, $t1, 256		# 14th layer
+	sw $t2, 60($t1)
+	sw $t2, 80($t1)
+	sw $t2, 116($t1)
+	sw $t2, 140($t1)
+	sw $t2, 152($t1)
+	sw $t2, 172($t1)
+	sw $t2, 184($t1)
+	sw $t2, 188($t1)
+	sw $t2, 200($t1)
+	
+	addi $t1, $t1, 256		# 15th layer
+	sw $t2, 60($t1)
+	sw $t2, 80($t1)
+	sw $t2, 116($t1)
+	sw $t2, 140($t1)
+	sw $t2, 152($t1)
+	sw $t2, 172($t1)
+	sw $t2, 184($t1)
+	sw $t2, 192($t1)
+	sw $t2, 200($t1)
+	
+	addi $t1, $t1, 256		# 16th layer
+	sw $t2, 60($t1)
+	sw $t2, 80($t1)
+	sw $t2, 116($t1)
+	sw $t2, 140($t1)
+	sw $t2, 152($t1)
+	sw $t2, 172($t1)
+	sw $t2, 184($t1)
+	sw $t2, 196($t1)
+	sw $t2, 200($t1)
+	
+	addi $t1, $t1, 256		# 17th layer
+	sw $t2, 60($t1)
+	sw $t2, 80($t1)
+	sw $t2, 116($t1)
+	sw $t2, 140($t1)
+	sw $t2, 152($t1)
+	sw $t2, 172($t1)
+	sw $t2, 184($t1)
+	sw $t2, 200($t1)
+	
+	addi $t1, $t1, 256		# 18th layer
+	sw $t2, 60($t1)
+	sw $t2, 80($t1)
+	sw $t2, 116($t1)
+	sw $t2, 128($t1)
+	sw $t2, 140($t1)
+	sw $t2, 152($t1)
+	sw $t2, 172($t1)
+	sw $t2, 184($t1)
+	sw $t2, 200($t1)
+	
+	addi $t1, $t1, 256		# 19th layer
+	sw $t2, 60($t1)
+	sw $t2, 64($t1)
+	sw $t2, 68($t1)
+	sw $t2, 72($t1)
+	sw $t2, 76($t1)
+	sw $t2, 80($t1)
+	sw $t2, 120($t1)
+	sw $t2, 124($t1)
+	sw $t2, 132($t1)
+	sw $t2, 136($t1)
+	sw $t2, 156($t1)
+	sw $t2, 160($t1)
+	sw $t2, 164($t1)
+	sw $t2, 168($t1)
+	sw $t2, 184($t1)
+	sw $t2, 200($t1)
+	
+	addi $t1, $t1, 1536		# 25th layer
+	sw $t2, 104($t1)
+	
+	addi $t1, $t1, 256		
+	sw $t2, 104($t1)
+	sw $t2, 108($t1)
+	sw $t2, 112($t1)
+	
+	addi $t1, $t1, 256	
+	sw $t2, 100($t1)	
+	sw $t2, 104($t1)
+	sw $t2, 108($t1)
+	sw $t2, 112($t1)
+	
+	addi $t1, $t1, 256
+	sw $t2, 104($t1)
+	sw $t2, 112($t1)
+	sw $t2, 116($t1)
+	
+	addi $t1, $t1, 256
+	sw $t2, 116($t1)
+	sw $t2, 120($t1)
+	
+	addi $t1, $t1, 256
+	sw $t2, 124($t1)
+	sw $t2, 128($t1)
+	sw $t2, 132($t1)
+	
+	addi $t1, $t1, 256
+	sw $t2, 124($t1)
+	sw $t2, 128($t1)
+	sw $t2, 132($t1)
+	
+	addi $t1, $t1, 256
+	sw $t2, 116($t1)
+	sw $t2, 120($t1)
+	sw $t2, 124($t1)
+	sw $t2, 128($t1)
+	sw $t2, 132($t1)
+	
+	addi $t1, $t1, 256
+	sw $t2, 108($t1)
+	sw $t2, 112($t1)
+	sw $t2, 116($t1)
+	sw $t2, 124($t1)
+	sw $t2, 128($t1)
+	sw $t2, 132($t1)
+	
+	addi $t1, $t1, 256
+	sw $t2, 104($t1)
+	sw $t2, 108($t1)
+	sw $t2, 116($t1)
+	sw $t2, 124($t1)
+	sw $t2, 128($t1)
+	sw $t2, 132($t1)
+	sw $t2, 136($t1)
+	
+	addi $t1, $t1, 256
+	sw $t2, 104($t1)
+	sw $t2, 108($t1)
+	sw $t2, 116($t1)
+	sw $t2, 120($t1)
+	sw $t2, 124($t1)
+	sw $t2, 128($t1)
+	sw $t2, 132($t1)
+	sw $t2, 136($t1)
+	
+	addi $t1, $t1, 256
+	sw $t2, 96($t1)
+	sw $t2, 100($t1)
+	sw $t2, 104($t1)
+	sw $t2, 108($t1)
+	sw $t2, 112($t1)
+	sw $t2, 116($t1)
+	sw $t2, 128($t1)
+	sw $t2, 132($t1)
+	sw $t2, 136($t1)
+	
+	addi $t1, $t1, 256
+	sw $t2, 96($t1)
+	sw $t2, 100($t1)
+	sw $t2, 104($t1)
+	sw $t2, 108($t1)
+	sw $t2, 112($t1)
+	sw $t2, 128($t1)
+	sw $t2, 132($t1)
+	sw $t2, 136($t1)
+	
+	addi $t1, $t1, 256
+	sw $t2, 104($t1)
+	sw $t2, 108($t1)
+	sw $t2, 112($t1)
+	sw $t2, 116($t1)
+	sw $t2, 124($t1)
+	sw $t2, 128($t1)
+	sw $t2, 132($t1)
+	sw $t2, 136($t1)
+	
+	addi $t1, $t1, 256
+	sw $t2, 104($t1)
+	sw $t2, 108($t1)
+	sw $t2, 112($t1)
+	sw $t2, 116($t1)
+	sw $t2, 120($t1)
+	sw $t2, 124($t1)
+	sw $t2, 128($t1)
+	sw $t2, 132($t1)
+	
+	addi $t1, $t1, 256
+	sw $t2, 112($t1)
+	sw $t2, 116($t1)
+	sw $t2, 120($t1)
+	sw $t2, 124($t1)
+	sw $t2, 128($t1)
+	sw $t2, 132($t1)
+	
+	addi $t1, $t1, 256
+	sw $t2, 104($t1)
+	sw $t2, 108($t1)
+	sw $t2, 128($t1)
+	sw $t2, 132($t1)
+	sw $t2, 136($t1)
+	
+	addi $t1, $t1, 256
+	sw $t2, 100($t1)
+	sw $t2, 104($t1)
+	sw $t2, 108($t1)
+	sw $t2, 136($t1)
+	sw $t2, 140($t1)
+	
+	addi $t1, $t1, 256
+	sw $t2, 100($t1)
+
+exit:
+	li $v0, 32
+	li $a0, 1000	# Achieving 24fps
+	syscall
+
 	li $v0, 10 # terminate the program gracefully
 	syscall
 
