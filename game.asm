@@ -26,7 +26,8 @@
 # 7. Animated Sprites (2 Points)
 #
 # Link to video demonstration for final submission:
-# - 
+# - https://youtu.be/QAYT57Eo0EM
+# - https://github.com/TripleADC/B58Game
 #
 # Are you OK with us sharing the video with people outside course staff?
 # - yes
@@ -39,6 +40,7 @@
 # d: Move right
 # x: Attack (Inhale/Exhale)
 # z: Consume
+# p: Restart
 #
 # ATTACKS:
 # Kirby has two states: Empty and full
@@ -49,11 +51,6 @@
 # If Kirby is full, by pressing x, a star projectile will be exhaled in the direction Kirby is facing
 # This star can defeat enemies
 # By exhaling, Kirby will no longer be full
-#
-# CONSUMING:
-# If kirby is full, by pressing z, he will consume the enemy he just inhaled
-# This will restore 1 heart of health
-# By consuming, Kirby will no longer be full
 #
 # ENEMIES:
 # There are two types of enemies: stationary and moving
@@ -70,6 +67,11 @@
 # When Kirby is hurt, he will be given invincibility frames for a short amount of time
 # If Kirby's health goes to 0, the player will lose the game
 #
+# CONSUMING:
+# If kirby is full, by pressing z, he will consume the enemy he just inhaled
+# This will restore 1 heart of health
+# By consuming, Kirby will no longer be full
+# 
 # SCORING:
 # Kirby needs help restoring the star rod, and can only do so by defeating enemies!
 # 
