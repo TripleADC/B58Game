@@ -38,7 +38,7 @@
 .data
 # Let enemy data be read like player data: e.x, e.y, e.dx, e.dy, e.facing, e.alive, e.timer
 enemy_1_data:	.word 30, 54, 1, 0, 1, 1, 15000
-enemy_2_data:	.word 54, 21, 0, 0, 0, 1, 15000
+enemy_2_data:	.word 54, 21, 1, 0, 0, 1, 15000
 enemy_3_data:	.word 4, 36, 0, 0, 1, 1, 15000
 
 kirby_full:	.word 0
@@ -49,8 +49,9 @@ kirby_attack_frames:		.word 1500
 
 # Let projectile data be read like: p.x, p.y, p.dx, p.dy, p.timer
 kirby_attack_data:	.word 1000, 1000, 0, 0, 0
-enemy_2_attack_data:	.word 1000, 1000, 0, 0, 10000
-enemy_3_attack_data:	.word 1000, 1000, 0, 0, 10000
+enemy_3_attack_data:	.word 1000, 1000, 0, 0, 0
+
+score:	.word 0
 
 
 .eqv BASE_ADDRESS 0x10008000
@@ -77,28 +78,84 @@ game_start:
 	li $t4, 5
 	sw $t4, 0($t3)
 	
+	la $t3, kirby_full
+	li $t4, 0
+	sw $t4, 0($t3)
+	
+	la $t3, kirby_invincible_frames
+	li $t4, 2000
+	sw $t4, 0($t3)
+	
+	la $t3, kirby_attack_frames
+	li $t4, 1500
+	sw $t4, 0($t3)
+	
 	# Initializing enemy 1 data
-	la $t7, enemy_1_data
-	li $t3, 30
-	sw $t3, 0($t7)		
-	li $t3, 54
-	sw $t3, 4($t7)
-	li $t3, 1
-	sw $t3, 8($t7)
+	la $t1, enemy_1_data
+	li $t2, 30		# Resetting positions
+	sw $t2, 0($t1)
+	li $t2, 54
+	sw $t2, 4($t1)
+	li $t2, 1		# Resetting speeds and facing
+	sw $t2, 8($t1)	
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	li $t2, 0
+	sw $t2, 12($t1)
+	li $t2, 15000		# Resetting timer
+	sw $t2, 24($t1)
 	
 	# Initializing enemy 2 data
-	la $t7, enemy_2_data
-	li $t3, 56
-	sw $t3, 0($t7)		
-	li $t3, 21
-	sw $t3, 4($t7)
+	la $t1, enemy_2_data
+	li $t2, 54		# Resetting positions
+	sw $t2, 0($t1)
+	li $t2, 21
+	sw $t2, 4($t1)
+	li $t2, 1		# Resetting speeds and facing
+	sw $t2, 8($t1)	
+	sw $t2, 20($t1)
+	li $t2, 0
+	sw $t2, 12($t1)	
+	sw $t2, 16($t1)
+	li $t2, 15000		# Resetting timer
+	sw $t2, 24($t1)
 	
 	# Initializing enemy 3 data
-	la $t7, enemy_3_data
-	li $t3, 2
-	sw $t3, 0($t7)		
-	li $t3, 36
-	sw $t3, 4($t7)
+	la $t1, enemy_3_data
+	li $t2, 4		# Resetting positions
+	sw $t2, 0($t1)
+	li $t2, 36
+	sw $t2, 4($t1)
+	li $t2, 1		# Resetting speeds and facing
+	sw $t2, 16($t1)
+	sw $t2, 20($t1)
+	li $t2, 0
+	sw $t2, 8($t1)	
+	sw $t2, 12($t1)
+	li $t2, 15000		# Resetting timer
+	sw $t2, 24($t1)
+	
+	# Removing all projectiles
+	la $t1, kirby_attack_data
+	li $t2, 1000
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	li $t2, 0
+	sw $t2, 8($t1)
+	sw $t2, 12($1)
+	
+	la $t1, enemy_3_attack_data
+	li $t2, 1000
+	sw $t2, 0($t1)
+	sw $t2, 4($t1)
+	li $t2, 0
+	sw $t2, 8($t1)
+	sw $t2, 12($1)
+	
+	# Resetting score
+	la $t3, score
+	li $t4, 0
+	sw $t4, 0($t3)
 	
 loop:
 	li $v0, 32
@@ -193,9 +250,9 @@ enemy_2_respawn:
 	li $t2, 21
 	sw $t2, 4($t1)
 	li $t2, 1		# Resetting speeds and facing
+	sw $t2, 8($t1)	
 	sw $t2, 20($t1)
 	li $t2, 0
-	sw $t2, 8($t1)	
 	sw $t2, 12($t1)	
 	sw $t2, 16($t1)
 	li $t2, 15000		# Resetting timer
@@ -1683,6 +1740,8 @@ print_enemy_right:
 print_projectiles_prelude:
 	la $t7, kirby_attack_data
 	jal print_projectiles
+	la $t7, enemy_3_attack_data
+	jal print_projectiles
 	
 	j print_hearts_prelude
 
@@ -1867,11 +1926,28 @@ x_pressed:
 	
 	la $t3, kirby_full			# Checking if kirby is full
 	lw $t4, 0($t3)
-	beq $t4, 1, x_pressed_full_prelude
+	beq $t4, 1, enemy_3_spawn_star_check
 	
 	j object_collide_prelude
 	
+enemy_3_spawn_star_check:
+	la $t3, enemy_3_data
+	lw $t4, 0($t3)
+	beq $t4, 1000, x_pressed_full_prelude
+	
+enemy_3_spawn_star:
+	la $t3, enemy_3_attack_data
+	li $t4, 10			# Spawning star near enemy 3 position
+	sw $t4, 0($t3)
+	li $t4, 36
+	sw $t4, 4($t3)
+	li $t4, 2
+	sw $t4, 8($t3)
+	li $t4, 0
+	sw $t4, 12($t3)
+
 x_pressed_full_prelude:	
+						# Enemy 3 shoots back
 	la $t3, kirby_facing
 	lw $t4, 0($t3)
 	beq $t4, 1, x_pressed_full_right
@@ -2005,6 +2081,7 @@ floor_collided:
 ### MOVING ENEMIES
 enemy_move_prelude_pre:
 
+	la $t3, enemy_1_data
 	la $t7, enemy_1_data
 	jal move_enemy_prelude
 	la $t7, enemy_2_data
@@ -2020,6 +2097,15 @@ move_enemy_prelude:
 	lw $t8, 0($t7)		# $t8 = e1.x
 	lw $t5, 8($t7)		# $t5 = e1.dx	
 
+	beq $t3, $t7, move_enemy_1
+	
+move_enemy_2:
+	bge $t8, 56, flip_enemy
+	ble $t8, 40, flip_enemy
+	
+	j move_enemy
+	
+move_enemy_1:
 	bge $t8, 56, flip_enemy
 	ble $t8, 4, flip_enemy
 	
@@ -2042,6 +2128,8 @@ move_enemy:
 	# Let $t5, $t6 be a TEMPORARY VARIABLES for calculations
 projectile_move_prelude:
 	la $t7, kirby_attack_data
+	jal projectile_move
+	la $t7, enemy_3_attack_data
 	jal projectile_move
 
 	j projectile_collide_prelude
@@ -2074,7 +2162,7 @@ projectile_despawn:
 projectile_collide_prelude:
 	la $t8, kirby_attack_data
 	lw $t4, 0($t8)
-	bge $t4, 1000, enemy_collide_prelude	# In the case no projectiles exist
+	bge $t4, 1000, projectile_collide_enemy_prelude	# In the case no projectiles exist
 	
 	la $t7, enemy_1_data
 	jal check_x_proj
@@ -2083,7 +2171,7 @@ projectile_collide_prelude:
 	la $t7, enemy_3_data
 	jal check_x_proj
 	
-	j enemy_collide_prelude
+	j projectile_collide_enemy_prelude
 	
 check_x_proj:
 	lw $t1,0($t8)		# Let $t1 = proj.x
@@ -2145,6 +2233,80 @@ proj_collide:
 	lw $t2, 24($t7)
 	addi $t2, $t2, -100
 	sw $t2, 24($t7)
+	
+	jr $ra
+	
+projectile_collide_enemy_prelude:
+	la $t7, enemy_3_attack_data
+	lw $t4, 0($t7)
+	beq $t4, 1000, enemy_collide_prelude	# In the case no projectiles exist
+	
+	jal check_x_proj_e
+	
+	j enemy_collide_prelude
+	
+check_x_proj_e:
+	lw $t3,0($t7)		# Let $t3 = e.x
+	lw $t4,4($t7)		# Let $t4 = e.y
+	addi $t5, $s0, 6	# Let $t5 = p.x + 6
+	addi $t6, $t3, 6	# Let $t6 = e.x + 6	
+	
+	ble $s0, $t6, e_before_proj_e	# If p.x < e.x + 6
+	jr $ra			
+	
+e_before_proj_e:	
+	ble $t3, $s0, y_check_proj_e		# If e.x < p.x 
+	
+proj_e_before_e_prelude:
+	ble $t3, $t5, proj_e_before_e	# If e.x < p.x + 6
+	jr $ra
+
+proj_e_before_e:
+	ble $s0, $t3, y_check_proj_e		# If p.x < e.x
+	jr $ra
+
+y_check_proj_e:
+	addi $t5, $s1, 6	# Let $t5 = p.y + 6
+	addi $t6, $t4, 6	# Let $t6 = e.y + 6
+
+	ble $s1, $t6, proj_e_above_e	# If p.y < e.y + 6
+	jr $ra
+	
+proj_e_above_e:
+	bge $s1, $t4, proj_e_collide	# If p.y < e.y
+		
+e_above_proj_e_prelude:
+	ble $t4, $t5, e_above_proj_e	# If e.y < p.y + 6
+	jr $ra
+
+e_above_proj_e:
+	bge $t4, $s1, proj_e_collide	# If e.y < p.y
+	jr $ra
+
+proj_e_collide:
+	li $t2, 1000		# Setting out of bounds and motionless
+	sw $t2, 0($t7)
+	sw $t2, 4($t7)
+	li $t2, 0
+	sw $t2, 8($t7)
+	sw $t2, 12($t7)
+	
+	la $t1, kirby_invincible_frames	
+	lw $t2, 0($t1)
+	beq $t2, 2000, proj_e_reduce_health
+	
+	jr $ra
+	
+proj_e_reduce_health:
+	la $t1, kirby_health	# Reducing health
+	lw $t2, 0($t1)		
+	addi $t2, $t2, -1
+	sw $t2, 0($t1)
+	
+	la $t1, kirby_invincible_frames
+	lw $t2, 0($t1)
+	addi $t2, $t2, -100	# Kickstarting invincibility frames
+	sw $t2, 0($t1)
 	
 	jr $ra
 
