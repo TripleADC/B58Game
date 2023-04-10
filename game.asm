@@ -2008,6 +2008,7 @@ control:
 	beq $t4, 0x61, a_pressed
 	beq $t4, 0x70, p_pressed
 	beq $t4, 0x78, x_pressed
+	beq $t4, 0x7A, z_pressed
 	
 a_pressed:
 	beq $s2, -4, side_collide	# Checking if max velocity
@@ -2102,6 +2103,32 @@ x_pressed_full_right:
 	li $t4, 0
 	sw $t4, 0($t3)
 
+	j object_collide_prelude
+	
+z_pressed:
+	la $t3, kirby_full			# Checking if kirby is full
+	lw $t4, 0($t3)
+	beq $t4, 1, check_health_restore
+	
+	j object_collide_prelude
+
+check_health_restore:
+	la $t3, kirby_health			# Checking if health is less than 5
+	lw $t4, 0($t3)
+	blt $t4, 5, restore_health
+	
+	j object_collide_prelude
+
+restore_health:
+	la $t3, kirby_health			# Restoring health
+	lw $t4, 0($t3)
+	addi $t4, $t4, 1
+	sw $t4, 0($t3)
+	
+	la $t3, kirby_full			# Updating kirby so that he is not full anymore
+	li $t4, 0
+	sw $t4, 0($t3)
+	
 	j object_collide_prelude
 	
 p_pressed:
