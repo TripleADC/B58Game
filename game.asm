@@ -1877,7 +1877,7 @@ print_score_prelude:
 	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS		
 	la $t3, score
 	lw $t4, 0($t3)
-	blt $t4, 10, control_prelude
+	blt $t4, 10, print_full_prelude
 	
 print_score_1:
 	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
@@ -1905,7 +1905,7 @@ print_score_1:
 	li $t2, 0x00d2e2e4
 	sw $t2, 244($t1)
 	
-	blt $t4, 20, control_prelude
+	blt $t4, 20, print_full_prelude
 	
 print_score_2:
 	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
@@ -1933,7 +1933,7 @@ print_score_2:
 	li $t2, 0x00fb6161
 	sw $t2, 220($t1)
 	
-	blt $t4, 25, control_prelude
+	blt $t4, 25, print_full_prelude
 	
 print_score_3:
 	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
@@ -1970,6 +1970,24 @@ print_score_3:
 	sw $t2, 192($t1)
 	addi $t1, $t1, 256
 	sw $t2, 184($t1)
+	
+print_full_prelude:
+	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS		
+	la $t3, kirby_full
+	lw $t4, 0($t3)
+	beqz $t4, control_prelude
+	
+print_full:
+	addi $t1, $t1, 1792
+	li $t2, 0x00f1ad5c
+	sw $t2, 8($t1)
+	addi $t1, $t1, 256
+	sw $t2, 4($t1)
+	sw $t2, 8($t1)
+	sw $t2, 12($t1)
+	addi $t1, $t1, 256
+	sw $t2, 8($t1)
+
 	
 control_prelude:
 	
