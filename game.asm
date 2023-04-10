@@ -2709,13 +2709,111 @@ background_draw_end_loop:
 exit_prelude:
 	la $t1, kirby_health
 	lw $t2, 0($t1)
-	blez $t2, background_draw_win
+	blez $t2, background_draw_lose
 	
 	j background_draw_win
 	
 background_draw_lose:
-
+	li $t1, BASE_ADDRESS		# $t1 = BASE_ADDRESS
+	li $t2, 0x00d2e2e4		# $t2 = white
 	
+	addi $t1, $t1, 6656		# 13th layer
+	sw $t2, 48($t1)
+	sw $t2, 68($t1)
+	sw $t2, 104($t1)
+	sw $t2, 136($t1)
+	sw $t2, 140($t1)
+	sw $t2, 144($t1)
+	sw $t2, 148($t1)
+	sw $t2, 168($t1)
+	sw $t2, 172($t1)
+	sw $t2, 176($t1)
+	sw $t2, 180($t1)
+	sw $t2, 192($t1)
+	sw $t2, 196($t1)
+	sw $t2, 200($t1)
+	sw $t2, 204($t1)
+	sw $t2, 208($t1)
+	sw $t2, 212($t1)
+	sw $t2, 216($t1)
+	
+	addi $t1, $t1, 256		# 13th layer
+	sw $t2, 48($t1)
+	sw $t2, 68($t1)
+	sw $t2, 104($t1)
+	sw $t2, 132($t1)	# O
+	sw $t2, 152($t1)	
+	sw $t2, 164($t1)	# S
+	sw $t2, 204($t1)
+	
+	addi $t1, $t1, 256		# 13th layer
+	sw $t2, 48($t1)
+	sw $t2, 68($t1)
+	sw $t2, 104($t1)
+	sw $t2, 132($t1)	# O
+	sw $t2, 152($t1)	
+	sw $t2, 168($t1)	# S
+	sw $t2, 172($t1)
+	sw $t2, 176($t1)
+	sw $t2, 204($t1)
+	
+	addi $t1, $t1, 256		# 13th layer
+	sw $t2, 48($t1)
+	sw $t2, 68($t1)
+	sw $t2, 104($t1)
+	sw $t2, 132($t1)	# O
+	sw $t2, 152($t1)	
+	sw $t2, 180($t1)	# S
+	sw $t2, 204($t1)
+	
+	addi $t1, $t1, 256		# 13th layer
+	sw $t2, 48($t1)
+	sw $t2, 68($t1)
+	sw $t2, 104($t1)
+	sw $t2, 132($t1)	# O
+	sw $t2, 152($t1)	
+	sw $t2, 180($t1)	# S
+	sw $t2, 204($t1)
+	
+	addi $t1, $t1, 256		# 13th layer
+	sw $t2, 48($t1)
+	sw $t2, 68($t1)
+	sw $t2, 104($t1)
+	sw $t2, 132($t1)	# O
+	sw $t2, 152($t1)	
+	sw $t2, 180($t1)	# S
+	sw $t2, 204($t1)
+	
+	addi $t1, $t1, 256		# 13th layer
+	sw $t2, 48($t1)
+	sw $t2, 68($t1)
+	sw $t2, 104($t1)
+	sw $t2, 132($t1)	# O
+	sw $t2, 152($t1)	
+	sw $t2, 164($t1)
+	sw $t2, 180($t1)	# S
+	sw $t2, 204($t1)
+	
+	addi $t1, $t1, 256		# 13th layer
+	sw $t2, 48($t1)
+	sw $t2, 52($t1)
+	sw $t2, 56($t1)
+	sw $t2, 60($t1)
+	sw $t2, 64($t1)
+	sw $t2, 68($t1)
+	sw $t2, 104($t1)
+	sw $t2, 108($t1)
+	sw $t2, 112($t1)
+	sw $t2, 116($t1)
+	sw $t2, 120($t1)
+	sw $t2, 136($t1)	# O
+	sw $t2, 140($t1)
+	sw $t2, 144($t1)
+	sw $t2, 148($t1)
+	sw $t2, 168($t1)	# S
+	sw $t2, 172($t1)
+	sw $t2, 176($t1)
+	sw $t2, 204($t1)
 	
 	j exit
 	
